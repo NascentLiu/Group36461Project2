@@ -318,7 +318,6 @@ class App(Tk):
             self.load_file("IPL.txt")
         elif number_LD == 15:
             PC_value = self.PC_content.cget("text")
-            print("当前的PC_value是",self.PC_value)
             jj = self.convert_binary_to_decimal(PC_value.zfill(12))#MAR_value
             PC_value = self.convert_decimal_to_binary(self.convert_binary_to_decimal(PC_value) + 1)
             self.PC_content['text'] = PC_value.zfill(12)
@@ -429,10 +428,10 @@ class App(Tk):
         elif Opcode == '100010':
             self.execute_STX(IX, EA)
         #从这开始project2了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
-        elif Opcode == '001000':#完成
-            self.execute_JZ(R, EA)
-        elif Opcode == '001001':#不知道负的EA该怎么显示
-            self.execute_JNE(R, EA)
+        # elif Opcode == '001000':#完成
+        #     self.execute_JZ(R, EA)
+        # elif Opcode == '001001':#不知道负的EA该怎么显示
+        #     self.execute_JNE(R, EA)
         #elif Opcode == '001010':
             #self.execute_JCC(R, EA)
         #elif Opcode == '001011':
@@ -555,61 +554,61 @@ class App(Tk):
                 instruction = str(bin(int(words[1], base=16)))[2:].zfill(16)
                 self.memory[location] = instruction
 
-    def execute_JZ(self, R: str, EA: int):
-        print(EA, R)
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            self.GPR_value = self.GPR0_content.cget('text')
-        elif a == 1:
-            self.GPR_value = self.GPR1_content.cget('text')
-        elif a == 2:
-            self.GPR_value = self.GPR2_content.cget('text')
-        elif a == 3:
-            self.GPR_value = self.GPR3_content.cget('text')
-        b = self.convert_binary_to_decimal(self.GPR_value)
-        if b == 0:
-            c = self.convert_decimal_to_binary(EA)
-            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-            self.PC_content.grid(row=5, column=21)
-            print("c:",c.zfill(16))
-        else:
-            future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
-            self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
-            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
-            self.PC_content.grid(row=5, column=21)
-            print("PC_value:",self.PC_value)
-
-    def execute_JNE(self, R: str, EA: int):
-        print(EA, R)
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            self.GPR_value = self.GPR0_content.cget('text')
-        elif a == 1:
-            self.GPR_value = self.GPR1_content.cget('text')
-        elif a == 2:
-            self.GPR_value = self.GPR2_content.cget('text')
-        elif a == 3:
-            self.GPR_value = self.GPR3_content.cget('text')
-        b = self.convert_binary_to_decimal(self.GPR_value)
-        if b != 0:
-            c = self.convert_decimal_to_binary(-EA)
-            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-            self.PC_content.grid(row=5, column=21)
-            print("c:", c.zfill(16))
-        else:
-            future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
-            self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
-            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
-            self.PC_content.grid(row=5, column=21)
-            print("PC_value:", self.PC_value)
-            """
+    # def execute_JZ(self, R: str, EA: int):
+    #     print(EA, R)
+    #     a = self.convert_binary_to_decimal(R)
+    #     if a == 0:
+    #         self.GPR_value = self.GPR0_content.cget('text')
+    #     elif a == 1:
+    #         self.GPR_value = self.GPR1_content.cget('text')
+    #     elif a == 2:
+    #         self.GPR_value = self.GPR2_content.cget('text')
+    #     elif a == 3:
+    #         self.GPR_value = self.GPR3_content.cget('text')
+    #     b = self.convert_binary_to_decimal(self.GPR_value)
+    #     if b == 0:
+    #         c = self.convert_decimal_to_binary(EA)
+    #         self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+    #         self.PC_content.grid(row=5, column=21)
+    #         print("c:",c.zfill(16))
+    #     else:
+    #         future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
+    #         self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
+    #         self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
+    #         self.PC_content.grid(row=5, column=21)
+    #         print("PC_value:",self.PC_value)
+    #
+    # def execute_JNE(self, R: str, EA: int):
+    #     print(EA, R)
+    #     a = self.convert_binary_to_decimal(R)
+    #     if a == 0:
+    #         self.GPR_value = self.GPR0_content.cget('text')
+    #     elif a == 1:
+    #         self.GPR_value = self.GPR1_content.cget('text')
+    #     elif a == 2:
+    #         self.GPR_value = self.GPR2_content.cget('text')
+    #     elif a == 3:
+    #         self.GPR_value = self.GPR3_content.cget('text')
+    #     b = self.convert_binary_to_decimal(self.GPR_value)
+    #     if b != 0:
+    #         c = self.convert_decimal_to_binary(-EA)
+    #         self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+    #         self.PC_content.grid(row=5, column=21)
+    #         print("c:", c.zfill(16))
+    #     else:
+    #         future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
+    #         self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
+    #         self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
+    #         self.PC_content.grid(row=5, column=21)
+    #         print("PC_value:", self.PC_value)
+    #         """
     #def execute_JCC(self, R: str, EA: int):
-    def execute_JMA(self, Address):
-        a = Address
-        print(a)
-        c = self.convert_decimal_to_binary(a)
-        self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-        self.PC_content.grid(row=5, column=21)"""
+    # def execute_JMA(self, Address):
+    #     a = Address
+    #     print(a)
+    #     c = self.convert_decimal_to_binary(a)
+    #     self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+    #     self.PC_content.grid(row=5, column=21)
 if __name__ == "__main__":
     app = App()
     app.mainloop()
