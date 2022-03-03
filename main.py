@@ -198,7 +198,7 @@ class App(Tk):
 
         CC_display = Label(self, text="CC")
         CC_display.grid(row=10, column=22)
-        self.CC_content = Label(self, width=4, bg="white", text="0001")
+        self.CC_content = Label(self, width=4, bg="white", text="0000")
         self.CC_content.grid(row=10, column=23)
         self.CC_value = self.CC_content.cget("text")
 
@@ -601,7 +601,7 @@ class App(Tk):
             self.execute_JZ(R, EA)
         elif Opcode == '001001':#完成
             self.execute_JNE(R, EA)
-        elif Opcode == '001010':
+        elif Opcode == '001010':#完成
             self.execute_JCC(self.CC_value, EA)
         elif Opcode == '001011':#完成
             self.execute_JMA(EA)
@@ -803,6 +803,7 @@ class App(Tk):
             self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
             self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
             self.PC_content.grid(row=5, column=21)
+
     def execute_JMA(self, address):
         a = address
         c = self.convert_decimal_to_binary(a)
