@@ -605,7 +605,7 @@ class App(Tk):
             self.execute_JCC(self.CC_value, EA)
         elif Opcode == '001011':#完成
             self.execute_JMA(EA)
-        elif Opcode == '001100':#完成
+        elif Opcode == '001100':#不知道argument是啥
             self.execute_JSR(EA)
         elif Opcode == '001101':
             self.execute_RFS(EA)
@@ -759,14 +759,12 @@ class App(Tk):
         b = self.convert_binary_to_decimal(self.GPR_value)
         if b == 0:
             c = self.convert_decimal_to_binary(EA)
-            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-            self.PC_content.grid(row=5, column=21)
-            print("c:",c.zfill(16))
+            self.PC_content['text'] = c.zfill(12);
+            print("c:",c.zfill(12))
         else:
             future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
             self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
-            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
-            self.PC_content.grid(row=5, column=21)
+            self.PC_content['text'] = self.PC_value
             print("PC_value:",self.PC_value)
 
     def execute_JNE(self, R: str, EA: int):
@@ -783,41 +781,34 @@ class App(Tk):
         b = self.convert_binary_to_decimal(self.GPR_value)
         if b != 0:
             c = self.convert_decimal_to_binary(EA)
-            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-            self.PC_content.grid(row=5, column=21)
-            print("c:", c.zfill(16))
+            self.PC_content['text'] = c.zfill(12)
+            print("cC:", c.zfill(12))
         else:
             future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
             self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
-            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
-            self.PC_content.grid(row=5, column=21)
-            print("PC_value:", self.PC_value)
+            self.PC_content['text'] = self.PC_value
+            print("aaaPC_value:", self.PC_value)
 
     def execute_JCC(self, CC: str, address: int):
         if CC == "0000":
             c = self.convert_decimal_to_binary(address)
-            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-            self.PC_content.grid(row=5, column=21)
+            self.PC_content['text'] = c.zfill(12)
         else:
             future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
-            self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
-            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
-            self.PC_content.grid(row=5, column=21)
+            self.PC_value['text'] = future_PC_value.zfill(12)
+            self.PC_content['text'] = self.PC_value
 
     def execute_JMA(self, address):
         a = address
         c = self.convert_decimal_to_binary(a)
-        self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-        self.PC_content.grid(row=5, column=21)
+        self.PC_content['text'] = c.zfill(12)
 
     def execute_JSR(self, address):
         a = address + 1
         c = self.convert_decimal_to_binary(a)
-        self.GPR3_content = Label(self, width=25, bg="white", text=c.zfill(16))
-        self.GPR3_content.grid(row=8, column=1)
+        self.GPR3_content['text'] = c.zfill(16)
         b = self.convert_decimal_to_binary(address)
-        self.PC_content = Label(self, width=25, bg="white", text=b.zfill(12))
-        self.PC_content.grid(row=5, column=21)
+        self.PC_content['text'] = b.zfill(12)
 
     def execute_SOB(self, R, address):
         a = self.convert_binary_to_decimal(R)
@@ -832,12 +823,12 @@ class App(Tk):
         b = self.convert_binary_to_decimal(self.GPR_value) - 1
         if b > 0:
             c = self.convert_decimal_to_binary(address)
-            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+            self.PC_content['text'] = Label(self, width=25, bg="white", text=c.zfill(12))
             self.PC_content.grid(row=5, column=21)
         else:
             future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
             self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
-            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
+            self.PC_content['text'] = Label(self, width=25, bg="white", text=self.PC_value)
             self.PC_content.grid(row=5, column=21)
 
     def execute_JGE(self, R, address):
