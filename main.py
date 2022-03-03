@@ -198,8 +198,9 @@ class App(Tk):
 
         CC_display = Label(self, text="CC")
         CC_display.grid(row=10, column=22)
-        CC_content = Label(self, width=2, bg="white", text="")
-        CC_content.grid(row=10, column=23)
+        self.CC_content = Label(self, width=4, bg="white", text="0001")
+        self.CC_content.grid(row=10, column=23)
+        self.CC_value = self.CC_content.cget("text")
 
         self.button_Store = Button(self, text="Store", padx=5, pady=5, command=lambda: self.LD(11))
         self.button_Store.grid(row=13, column=20)
@@ -319,6 +320,7 @@ class App(Tk):
             self.MBR_content = Label(self, width=25, bg="white", text=self.memory[self.MAR])
             self.MBR_content.grid(row=7, column=21)
         elif number_LD == 14:
+            self.PC_value = "000000001000"
             self.GPR0_content = Label(self, width=25, bg="white", text="0000000000000000")
             self.GPR0_content.grid(row=5, column=1)
             self.GPR1_content = Label(self, width=25, bg="white", text="0000000000000000")
@@ -333,7 +335,7 @@ class App(Tk):
             self.IXR2_content.grid(row=11, column=1)
             self.IXR3_content = Label(self, width=25, bg="white", text="0000000000000000")
             self.IXR3_content.grid(row=12, column=1)
-            self.PC_content = Label(self, width=25, bg="white", text="000000000000")
+            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
             self.PC_content.grid(row=5, column=21)
             self.MAR_content = Label(self, width=25, bg="white", text="000000000000")
             self.MAR_content.grid(row=6, column=21)
@@ -357,11 +359,14 @@ class App(Tk):
         elif number_LD == 15:
             self.PC_value = self.PC_content.cget("text")
             print("当前的PC_value是",self.PC_value)
-            self.jj = self.convert_binary_to_decimal(self.PC_value[7:].zfill(12))#MAR_value
+            self.jj = self.convert_binary_to_decimal(self.PC_value[:].zfill(12))#current PC_value
             self.PC_next = self.convert_binary_to_decimal(self.PC_value) + 1
             self.PC_value = self.convert_decimal_to_binary(self.PC_next)
             self.PC_content = Label(self, width=25, bg="white", text=self.PC_value.zfill(12))
             self.PC_content.grid(row=5, column=21)
+            Halt_content = Label(self, width=2, bg="white", text="")
+            Halt_content.grid(row=17, column=21)
+            Halt_content.place(x=680, y=240)
             self.instruction_controller(self.memory[self.jj])
 
         elif number_LD == 16:
@@ -382,13 +387,14 @@ class App(Tk):
                     Run_content = Label(self, width=2, bg="red", text="")
                     Run_content.grid(row=17, column=24)
                     Run_content.place(x=770, y=240)
+                    Halt_content = Label(self, width=2, bg="red", text="")
+                    Halt_content.grid(row=17, column=21)
+                    Halt_content.place(x=680, y=240)
                 else:
                     Run_content = Label(self, width=2, bg="white", text="")
                     Run_content.grid(row=17, column=24)
                     Run_content.place(x=770, y=240)
-                    Halt_content = Label(self, width=2, bg="red", text="")
-                    Halt_content.grid(row=17, column=21)
-                    Halt_content.place(x=680, y=240)
+
 
 
         elif number_LD == 17:
@@ -576,7 +582,11 @@ class App(Tk):
         Address = instruction[11:]
         EA = self.getEA(IX, I, Address)
         print(Opcode, R, IX, I, Address)
-        if Opcode == '000001':
+        if Opcode == '000000':
+            Halt_content = Label(self, width=2, bg="red", text="")
+            Halt_content.grid(row=17, column=21)
+            Halt_content.place(x=680, y=240)
+        elif Opcode == '000001':
             self.execute_LDR(R, EA)
         elif Opcode == '000010':
             self.execute_STR(R, EA)
@@ -589,12 +599,20 @@ class App(Tk):
         #从这开始project2了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         elif Opcode == '001000':#完成
             self.execute_JZ(R, EA)
-        elif Opcode == '001001':#不知道负的EA该怎么显示
+        elif Opcode == '001001':#完成
             self.execute_JNE(R, EA)
-        #elif Opcode == '001010':
-            #self.execute_JCC(R, EA)
-        #elif Opcode == '001011':
-            #self.execute_JMA(EA)
+        elif Opcode == '001010':
+            self.execute_JCC(self.CC_value, EA)
+        elif Opcode == '001011':#完成
+            self.execute_JMA(EA)
+        elif Opcode == '001100':#完成
+            self.execute_JSR(EA)
+        elif Opcode == '001101':
+            self.execute_RFS(EA)
+        elif Opcode == '001110':#完成
+            self.execute_SOB(R, EA)
+        elif Opcode == '001111':#完成
+            self.execute_JGE(R, EA)
 
 
 
@@ -605,8 +623,8 @@ class App(Tk):
         self.MAR_content.grid(row=6, column=21)
         self.MAR_value = self.MAR_content.cget('text')
 
-        cc = self.convert_binary_to_decimal(self.MAR_value)
-        dd = self.memory[cc]
+        rr = self.convert_binary_to_decimal(self.MAR_value)
+        dd = self.memory[rr]
         self.MBR_content = Label(self, width=25, bg="white", text=dd)
         self.MBR_content.grid(row=7, column=21)
 
@@ -764,7 +782,7 @@ class App(Tk):
             self.GPR_value = self.GPR3_content.cget('text')
         b = self.convert_binary_to_decimal(self.GPR_value)
         if b != 0:
-            c = self.convert_decimal_to_binary(-EA)
+            c = self.convert_decimal_to_binary(EA)
             self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
             self.PC_content.grid(row=5, column=21)
             print("c:", c.zfill(16))
@@ -774,14 +792,77 @@ class App(Tk):
             self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
             self.PC_content.grid(row=5, column=21)
             print("PC_value:", self.PC_value)
-            """
-    #def execute_JCC(self, R: str, EA: int):
-    def execute_JMA(self, Address):
-        a = Address
-        print(a)
+
+    def execute_JCC(self, CC: str, address: int):
+        if CC == "0000":
+            c = self.convert_decimal_to_binary(address)
+            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+            self.PC_content.grid(row=5, column=21)
+        else:
+            future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
+            self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
+            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
+            self.PC_content.grid(row=5, column=21)
+    def execute_JMA(self, address):
+        a = address
         c = self.convert_decimal_to_binary(a)
         self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
-        self.PC_content.grid(row=5, column=21)"""
+        self.PC_content.grid(row=5, column=21)
+
+    def execute_JSR(self, address):
+        a = address + 1
+        c = self.convert_decimal_to_binary(a)
+        self.GPR3_content = Label(self, width=25, bg="white", text=c.zfill(16))
+        self.GPR3_content.grid(row=8, column=1)
+        b = self.convert_decimal_to_binary(address)
+        self.PC_content = Label(self, width=25, bg="white", text=b.zfill(12))
+        self.PC_content.grid(row=5, column=21)
+
+    def execute_SOB(self, R, address):
+        a = self.convert_binary_to_decimal(R)
+        if a == 0:
+            self.GPR_value = self.GPR0_content.cget('text')
+        elif a == 1:
+            self.GPR_value = self.GPR1_content.cget('text')
+        elif a == 2:
+            self.GPR_value = self.GPR2_content.cget('text')
+        elif a == 3:
+            self.GPR_value = self.GPR3_content.cget('text')
+        b = self.convert_binary_to_decimal(self.GPR_value) - 1
+        if b > 0:
+            c = self.convert_decimal_to_binary(address)
+            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+            self.PC_content.grid(row=5, column=21)
+        else:
+            future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
+            self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
+            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
+            self.PC_content.grid(row=5, column=21)
+
+    def execute_JGE(self, R, address):
+        a = self.convert_binary_to_decimal(R)
+        if a == 0:
+            self.GPR_value = self.GPR0_content.cget('text')
+        elif a == 1:
+            self.GPR_value = self.GPR1_content.cget('text')
+        elif a == 2:
+            self.GPR_value = self.GPR2_content.cget('text')
+        elif a == 3:
+            self.GPR_value = self.GPR3_content.cget('text')
+        b = self.convert_binary_to_decimal(self.GPR_value)
+        if b >= 0:
+            print(111111)
+            c = self.convert_decimal_to_binary(address)
+            self.PC_content = Label(self, width=25, bg="white", text=c.zfill(12))
+            self.PC_content.grid(row=5, column=21)
+        else:
+            print(222222)
+            future_PC_value = self.convert_binary_to_decimal(self.PC_value) + 1
+            self.PC_value = (self.convert_decimal_to_binary(future_PC_value)).zfill(12)
+            self.PC_content = Label(self, width=25, bg="white", text=self.PC_value)
+            self.PC_content.grid(row=5, column=21)
+
+
 if __name__ == "__main__":
     app = App()
     app.mainloop()
