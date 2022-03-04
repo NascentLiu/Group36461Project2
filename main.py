@@ -444,11 +444,14 @@ class App(Tk):
             self.execute_SRC(R, Count, LR)
         elif Opcode == '011010':#完成
             self.execute_RRC(R, Count, LR, AL)
-
-
-
-
-
+        elif Opcode == '000100':
+            self.execute_AMR(R, EA)
+        elif Opcode == '000101':
+            self.execute_SMR(R, EA)
+        elif Opcode == '000110':
+            self.execute_AIR(R, Address)
+        elif Opcode == '000111':
+            self.execute_SIR(R, Address)
         self.MAR_content['text'] = Address.zfill(12)
         self.MAR_value = self.MAR_content.cget('text')
         cc = self.convert_binary_to_decimal(self.MAR_value)
@@ -546,6 +549,72 @@ class App(Tk):
             self.IXR3_value = self.IXR3_content.cget('text')
             self.memory[EA] = self.IXR3_value
 
+    def execute_AMR(self, R: str, EA: int):
+        if R == '00':
+            self.GPR0_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) +
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+        elif R == '01':
+            self.GPR1_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) +
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+        elif R == '10':
+            self.GPR2_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) +
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+        else:
+            self.GPR3_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) +
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+
+    def execute_SMR(self, R: str, EA: int):
+        if R == '00':
+            self.GPR0_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) -
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+        elif R == '01':
+            self.GPR1_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) -
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+        elif R == '10':
+            self.GPR2_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) -
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+        else:
+            self.GPR3_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) -
+                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+
+    def execute_AIR(self, R: str, Address: str):
+        immed = self.convert_binary_to_decimal(Address)
+        if R == '00':
+            self.GPR0_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) + immed).zfill(16)
+        elif R == '01':
+            self.GPR1_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) + immed).zfill(16)
+        elif R == '10':
+            self.GPR2_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) + immed).zfill(16)
+        else:
+            self.GPR3_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) + immed).zfill(16)
+
+    def execute_SIR(self, R: str, Address: str):
+        immed = self.convert_binary_to_decimal(Address)
+        if R == '00':
+            self.GPR0_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) - immed).zfill(16)
+        elif R == '01':
+            self.GPR1_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) - immed).zfill(16)
+        elif R == '10':
+            self.GPR2_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) - immed).zfill(16)
+        else:
+            self.GPR3_content['text'] = self.convert_decimal_to_binary(
+                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) - immed).zfill(16)
+
     def load_file(self, file_name: str):
         # global location, instruction
         file_name = tkinter.filedialog.askopenfilename()
@@ -558,6 +627,7 @@ class App(Tk):
                 # Convert hexadecimal to a binary string
                 instruction = str(bin(int(words[1], base=16)))[2:].zfill(16)
                 self.memory[location] = instruction
+
 
     def PC_plus_one (self):
         PC_value = self.PC_content.cget('text')
@@ -842,6 +912,7 @@ class App(Tk):
         elif LR == 0:
             print(2)
             self.set_GPR_content(R, GPR_value[:16 - Count].zfill(16))
+
 
 if __name__ == "__main__":
     app = App()
