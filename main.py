@@ -1,6 +1,7 @@
 import tkinter.filedialog
 from tkinter import *
-
+from tkinter import simpledialog
+from tkinter import messagebox
 
 class App(Tk):
     def __init__(self):
@@ -452,7 +453,12 @@ class App(Tk):
             self.execute_SRC(R, Count, LR)
         elif Opcode == '011010':#完成
             self.execute_RRC(R, Count, LR, AL)
-
+        elif Opcode == '110001':#完成
+            self.execute_IN(R, Address)
+        elif Opcode == '110010':#完成
+            self.execute_OUT(R, Address)
+        elif Opcode == '110011':#完成
+            self.execute_CHK(R, Address)
         self.MAR_content['text'] = Address.zfill(12)
         self.MAR_value = self.MAR_content.cget('text')
         cc = self.convert_binary_to_decimal(self.MAR_value)
@@ -649,6 +655,7 @@ class App(Tk):
 
     def set_GPR_content(self, R, GPR_value):
         a = self.convert_binary_to_decimal(R)
+        GPR_value = GPR_value.zfill(16)
         if a == 0:
             self.GPR0_content['text'] = GPR_value
         elif a == 1:
@@ -913,6 +920,18 @@ class App(Tk):
         elif LR == 0:
             print(2)
             self.set_GPR_content(R, GPR_value[:16 - Count].zfill(16))
+
+    def execute_IN(self, R, address):
+        answer = simpledialog.askinteger("Input", "please enter an integer")
+        self.set_GPR_content(R, self.convert_decimal_to_binary(answer))
+
+    def execute_OUT(self, R, address):
+        GPR_value, a = self.get_GPR_content(R)
+        messagebox.showinfo("Information", GPR_value)
+
+
+
+
 
 
 if __name__ == "__main__":
