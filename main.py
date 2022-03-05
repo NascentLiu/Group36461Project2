@@ -243,6 +243,7 @@ class App(Tk):
         self.PC_next = 0
 
 
+
     #judge which button is clicked
     def get_value(self, number_LD):
         if number_LD == 1:
@@ -387,9 +388,8 @@ class App(Tk):
         A_L = instruction[8]
         L_R = instruction[9]
         count = instruction[12:]
-        print("Count,LR, AL",Count,LR, AL)
         EA = self.getEA(IX, I, Address)
-        print(Opcode, R, IX, I, Address)
+        print(Opcode,R,IX,I,Address,EA)
         if Opcode == '000000':
             Halt_content = Label(self, width=2, bg="red", text="")
             Halt_content.grid(row=17, column=21)
@@ -413,37 +413,37 @@ class App(Tk):
             self.execute_AIR(R, Address)
         elif Opcode == '000111':
             self.execute_SIR(R, Address)
-        elif Opcode == '001010':#完成
+        elif Opcode == '001000':#完成
             self.execute_JZ(R, EA)
-        elif Opcode == '001011':#完成
+        elif Opcode == '001001':#完成
             self.execute_JNE(R, EA)
-        elif Opcode == '001100':#完成
+        elif Opcode == '001010':#完成
             self.execute_JCC(R, EA)
-        elif Opcode == '001101':#完成
+        elif Opcode == '001011':#完成
             self.execute_JMA(EA)
-        elif Opcode == '001110':#不知道argument是啥
+        elif Opcode == '001100':#不知道argument是啥
             self.execute_JSR(EA)
-        elif Opcode == '001111':
+        elif Opcode == '':
             self.execute_RFS(Address)
-        elif Opcode == '010000':#完成
+        elif Opcode == '001110':#完成
             self.execute_SOB(R, EA)
-        elif Opcode == '010001':#完成
+        elif Opcode == '001111':#完成
             self.execute_JGE(R, EA)
-        elif Opcode == '010100':#完成
+        elif Opcode == '':#完成
             self.execute_MLT(R, IX)
-        elif Opcode == '010101':#完成
+        elif Opcode == '':#完成
             self.execute_DVD(R, IX)
-        elif Opcode == '010110':#完成
+        elif Opcode == '010010':#完成
             self.execute_TRR(R, IX)
-        elif Opcode == '010111':#完成
+        elif Opcode == '010011':#完成
             self.execute_AND(R, IX)
-        elif Opcode == '011000':#完成
+        elif Opcode == '010100':#完成
             self.execute_ORR(R, IX)
-        elif Opcode == '011001':#完成
+        elif Opcode == '010101':#完成
             self.execute_NOT(R)
-        elif Opcode == '011111':#完成
+        elif Opcode == '011001':#完成
             self.execute_SRC(R, A_L, L_R, count)
-        elif Opcode == '100000':#完成
+        elif Opcode == '011010':#完成
             self.execute_RRC(R, A_L, L_R, count)
 
         self.MAR_content['text'] = Address.zfill(12)
@@ -584,9 +584,11 @@ class App(Tk):
                 self.convert_binary_to_decimal(self.GPR0_content.cget('text')) -
                 self.convert_binary_to_decimal(self.memory[EA]))
         elif R == '01':
+            print(11111)
             self.GPR1_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR1_content.cget('text')) -
                 self.convert_binary_to_decimal(self.memory[EA]))
+            print(self.GPR1_content['text'])
         elif R == '10':
             self.GPR2_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR2_content.cget('text')) -
@@ -685,19 +687,20 @@ class App(Tk):
         self.PC_content['text'] = bin(EA)[2:].zfill(12)
 
 
-    def execute_JSR(self, address):
-        a = address + 1
-        c = self.convert_decimal_to_binary(a)
-        self.GPR3_content['text'] = c.zfill(16)
-        b = self.convert_decimal_to_binary(address)
-        self.PC_content['text'] = b.zfill(12)
-
-    def execute_RFS(self, immed: str):
-        self.set_GPR_content('0',address.zfill(16))
-        self.PC_content['text'] = self.GPR3_content.cget('text')[:12]
+    # def execute_JSR(self, address):
+    #     a = address + 1
+    #     c = self.convert_decimal_to_binary(a)
+    #     self.GPR3_content['text'] = c.zfill(16)
+    #     b = self.convert_decimal_to_binary(address)
+    #     self.PC_content['text'] = b.zfill(12)
+    #
+    # def execute_RFS(self, immed: str):
+    #     self.set_GPR_content('0',immed.zfill(16))
+    #     self.PC_content['text'] = self.GPR3_content.cget('text')[:12]
 
     def execute_SOB(self, R: str, EA: int):
         GPR_value = self.get_GPR_content(R)
+        self.set_GPR_content(R, self.convert_decimal_to_binary(self.convert_binary_to_decimal(GPR_value) - 1))
         if self.convert_binary_to_decimal(GPR_value) - 1 > 0:
             self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
@@ -710,66 +713,66 @@ class App(Tk):
         else:
             self.pc_plus_one()
 
-    def execute_MLT(self, R, IX):
-        if R == '00' or R == '10' or IX == '00' or IX == '10':
-            print("jinlaile", R, IX)
-            GPR_value1, a = self.get_GPR_content(R)
-            GPR_value2, b = self.get_GPR_content(IX)
-            ac = self.convert_binary_to_decimal(GPR_value1)
-            bc = self.convert_binary_to_decimal(GPR_value2)
-            Multiply_result = ac * bc
-            print(Multiply_result)
-            if Multiply_result > 65535:
-                self.set_CC(1,2,2,2)
-            else:
-                Multiply_result_binary = self.convert_decimal_to_binary(Multiply_result)
-                Multiply_result_binary = Multiply_result_binary.zfill(16)
-                High_order_bit = Multiply_result_binary[:8] + '00000000'
-                Lower_order_bit = Multiply_result_binary[8:].zfill(16)
-                if a == 0:
-                    print(111)
-                    self.GPR0_content['text'] = High_order_bit
-                    self.GPR1_content['text'] = Lower_order_bit
-                elif a == 2:
-                    print(222)
-                    print(High_order_bit)
-                    print(Lower_order_bit)
-                    self.GPR2_content['text'] = High_order_bit
-                    self.GPR3_content['text'] = Lower_order_bit
-
-
-    def execute_DVD(self, R, IX):
-        GPR_value, a = self.get_GPR_content(R)
-        ac = self.convert_binary_to_decimal(GPR_value)
-        b = self.convert_binary_to_decimal(IX)
-        if b == 1:
-            IX_value = self.IXR1_content.cget('text')
-        elif b == 2:
-            IX_value = self.IXR2_content.cget('text')
-        elif b == 3:
-            IX_value = self.IXR3_content.cget('text')
-        bc = self.convert_binary_to_decimal(IX_value)
-        if bc == 0:
-            self.Set_CC(2, 2, 1, 2)
-        else:
-            Quotient, Reminder = self.Divide(ac, bc)
-            print(ac, b, Quotient, Reminder)
-            Quotient_binary = self.convert_decimal_to_binary(Quotient)
-            Quotient_binary = Quotient_binary.zfill(16)
-            Reminder_binary = self.convert_decimal_to_binary(Reminder)
-            Reminder_binary = Reminder_binary.zfill(16)
-            if a == 0:
-                self.GPR0_content['text'] = Quotient_binary
-                self.GPR1_content['text'] = Reminder_binary
-            elif a == 1:
-                self.GPR1_content['text'] = Quotient_binary
-                self.GPR2_content['text'] = Reminder_binary
-            elif a == 2:
-                self.GPR2_content['text'] = Quotient_binary
-                self.GPR3_content['text'] = Reminder_binary
-            elif a == 3:
-                self.GPR3_content['text'] = Quotient_binary
-                self.GPR0_content['text'] = Reminder_binary
+    # def execute_MLT(self, R, IX):
+    #     if R == '00' or R == '10' or IX == '00' or IX == '10':
+    #         print("jinlaile", R, IX)
+    #         GPR_value1 = self.get_GPR_content(R)
+    #         GPR_value2 = self.get_GPR_content(IX)
+    #         ac = self.convert_binary_to_decimal(GPR_value1)
+    #         bc = self.convert_binary_to_decimal(GPR_value2)
+    #         Multiply_result = ac * bc
+    #         print(Multiply_result)
+    #         if Multiply_result > 65535:
+    #             self.set_CC(1,2,2,2)
+    #         else:
+    #             Multiply_result_binary = self.convert_decimal_to_binary(Multiply_result)
+    #             Multiply_result_binary = Multiply_result_binary.zfill(16)
+    #             High_order_bit = Multiply_result_binary[:8] + '00000000'
+    #             Lower_order_bit = Multiply_result_binary[8:].zfill(16)
+    #             if a == 0:
+    #                 print(111)
+    #                 self.GPR0_content['text'] = High_order_bit
+    #                 self.GPR1_content['text'] = Lower_order_bit
+    #             elif a == 2:
+    #                 print(222)
+    #                 print(High_order_bit)
+    #                 print(Lower_order_bit)
+    #                 self.GPR2_content['text'] = High_order_bit
+    #                 self.GPR3_content['text'] = Lower_order_bit
+    #
+    #
+    # def execute_DVD(self, R, IX):
+    #     GPR_value = self.get_GPR_content(R)
+    #     ac = self.convert_binary_to_decimal(GPR_value)
+    #     b = self.convert_binary_to_decimal(IX)
+    #     if b == 1:
+    #         IX_value = self.IXR1_content.cget('text')
+    #     elif b == 2:
+    #         IX_value = self.IXR2_content.cget('text')
+    #     elif b == 3:
+    #         IX_value = self.IXR3_content.cget('text')
+    #     bc = self.convert_binary_to_decimal(IX_value)
+    #     if bc == 0:
+    #         self.Set_CC(2, 2, 1, 2)
+    #     else:
+    #         Quotient, Reminder = self.Divide(ac, bc)
+    #         print(ac, b, Quotient, Reminder)
+    #         Quotient_binary = self.convert_decimal_to_binary(Quotient)
+    #         Quotient_binary = Quotient_binary.zfill(16)
+    #         Reminder_binary = self.convert_decimal_to_binary(Reminder)
+    #         Reminder_binary = Reminder_binary.zfill(16)
+    #         if a == 0:
+    #             self.GPR0_content['text'] = Quotient_binary
+    #             self.GPR1_content['text'] = Reminder_binary
+    #         elif a == 1:
+    #             self.GPR1_content['text'] = Quotient_binary
+    #             self.GPR2_content['text'] = Reminder_binary
+    #         elif a == 2:
+    #             self.GPR2_content['text'] = Quotient_binary
+    #             self.GPR3_content['text'] = Reminder_binary
+    #         elif a == 3:
+    #             self.GPR3_content['text'] = Quotient_binary
+    #             self.GPR0_content['text'] = Reminder_binary
 
     def execute_TRR(self, rx: str, ry: str):
         rx_value = self.get_GPR_content(rx)
@@ -852,7 +855,7 @@ class App(Tk):
             GPR_value = GPR_value[count_int:] + GPR_value[:count_int]
             self.set_GPR_content(R, GPR_value)
         elif A_L == '1' and L_R == '0':
-            GPR_value = GPR_vlaue[len(GPR_value) - count_int:] + GPR_value[:len(GPR_value) - count_int]
+            GPR_value = GPR_value[len(GPR_value) - count_int:] + GPR_value[:len(GPR_value) - count_int]
             self.set_GPR_content(R, GPR_value)
 
 if __name__ == "__main__":
