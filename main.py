@@ -237,13 +237,6 @@ class App(Tk):
         self.Run_label.grid(row=17, column=25)
         self.Run_label.place(x=790, y=240)
 
-        self.GPR0_value = '0000000000000000'
-        self.GPR1_value = '0000000000000000'
-        self.GPR2_value = '0000000000000000'
-        self.GPR3_value = '0000000000000000'
-        self.IXR1_value = '0000000000000000'
-        self.IXR2_value = '0000000000000000'
-        self.IXR3_value = '0000000000000000'
         self.memory = ['0000000000000000'] * 4096
         self.L_long = 0
         self.L_short = 0
@@ -391,9 +384,9 @@ class App(Tk):
         IX = instruction[8:10]
         I = instruction[10]
         Address = instruction[11:]
-        Count = self.convert_binary_to_decimal(instruction[12:])
-        AL = self.convert_binary_to_decimal(instruction[8])
-        LR = self.convert_binary_to_decimal(instruction[9])
+        A_L = instruction[8]
+        L_R = instruction[9]
+        count = instruction[12:]
         print("Count,LR, AL",Count,LR, AL)
         EA = self.getEA(IX, I, Address)
         print(Opcode, R, IX, I, Address)
@@ -420,38 +413,38 @@ class App(Tk):
             self.execute_AIR(R, Address)
         elif Opcode == '000111':
             self.execute_SIR(R, Address)
-        elif Opcode == '001000':#完成
-            self.execute_JZ(R, EA)
-        elif Opcode == '001001':#完成
-            self.execute_JNE(R, EA)
         elif Opcode == '001010':#完成
-            self.execute_JCC(R, EA)
+            self.execute_JZ(R, EA)
         elif Opcode == '001011':#完成
+            self.execute_JNE(R, EA)
+        elif Opcode == '001100':#完成
+            self.execute_JCC(R, EA)
+        elif Opcode == '001101':#完成
             self.execute_JMA(EA)
-        elif Opcode == '001100':#不知道argument是啥
+        elif Opcode == '001110':#不知道argument是啥
             self.execute_JSR(EA)
-        elif Opcode == '001101':
+        elif Opcode == '001111':
             self.execute_RFS(Address)
-        elif Opcode == '001110':#完成
-            self.execute_SOB(R, EA)
-        elif Opcode == '001111':#完成
-            self.execute_JGE(R, EA)
         elif Opcode == '010000':#完成
-            self.execute_MLT(R, IX)
+            self.execute_SOB(R, EA)
         elif Opcode == '010001':#完成
-            self.execute_DVD(R, IX)
-        elif Opcode == '010010':#完成
-            self.execute_TRR(R, IX)
-        elif Opcode == '010011':#完成
-            self.execute_AND(R, IX)
+            self.execute_JGE(R, EA)
         elif Opcode == '010100':#完成
-            self.execute_ORR(R, IX)
+            self.execute_MLT(R, IX)
         elif Opcode == '010101':#完成
-            self.execute_NOT(R)
+            self.execute_DVD(R, IX)
+        elif Opcode == '010110':#完成
+            self.execute_TRR(R, IX)
+        elif Opcode == '010111':#完成
+            self.execute_AND(R, IX)
+        elif Opcode == '011000':#完成
+            self.execute_ORR(R, IX)
         elif Opcode == '011001':#完成
-            self.execute_SRC(R, Count, LR)
-        elif Opcode == '011010':#完成
-            self.execute_RRC(R, Count, LR, AL)
+            self.execute_NOT(R)
+        elif Opcode == '011111':#完成
+            self.execute_SRC(R, A_L, L_R, count)
+        elif Opcode == '100000':#完成
+            self.execute_RRC(R, A_L, L_R, count)
 
         self.MAR_content['text'] = Address.zfill(12)
         self.MAR_value = self.MAR_content.cget('text')
@@ -464,157 +457,174 @@ class App(Tk):
     def getEA(self, IX: str, I: str, Address: str) -> int:
         EA = 0
         if IX == '00':
-            EA = self.convert_binary_to_decimal(Address)
+            EA = int(Address, 2)
         else:
-            EA = self.get_content_from_IX(IX) + self.convert_binary_to_decimal(Address)
+            EA = self.convert_binary_to_decimal(self.get_IXR_content(IX))+ int(Address, 2)
         if I == '1':
-            if self.memory[EA] != None:
-                EA_possible = self.convert_binary_to_decimal(self.memory[EA])
-                if EA_possible <= 4095:
-                    EA = EA_possible
+            EA_possible = self.convert_binary_to_decimal(self.memory[EA])
+            if EA_possible <= 4095:
+                EA = EA_possible
         return EA
 
 
-    def get_content_from_IX(self, IX: str) -> int:
-        IXR_value, a = self.get_IXR_content(IX)
-        IX_decimal = self.convert_binary_to_decimal(IXR_value)
-        return IX_decimal
+    def get_GPR_content(self, R: str) -> str:
+        if R == '00':
+            GPR_value = self.GPR0_content.cget('text')
+        elif R == '01':
+            GPR_value = self.GPR1_content.cget('text')
+        elif R == '10':
+            GPR_value = self.GPR2_content.cget('text')
+        else:
+            GPR_value = self.GPR3_content.cget('text')
+        return GPR_value
+
+
+    def set_GPR_content(self, R: str, GPR_value: str):
+        if R == '00':
+            self.GPR0_content['text'] = GPR_value
+        elif R == '01':
+            self.GPR1_content['text'] = GPR_value
+        elif R == '10':
+            self.GPR2_content['text'] = GPR_value
+        else:
+            self.GPR3_content['text'] = GPR_value
+
+
+    def get_IXR_content(self, IX: str) -> str:
+        if IX == '01':
+            IXR_value = self.IXR1_content.cget('text')
+        elif IX == '10':
+            IXR_value = self.IXR2_content.cget('text')
+        elif IX == '11':
+            IXR_value = self.IXR3_content.cget('text')
+        return IXR_value
 
 
     def convert_binary_to_decimal(self, binary: str) -> int:
-        return int(binary, 2)
+        if (binary[0] == '0'):
+            return int(binary, 2)
+        return -int(binary[1:], 2)
 
 
     def convert_decimal_to_binary(self, integer: int) -> str:
-        return bin(integer)[2:]
+        if integer >= 0:
+            return bin(integer)[2:].zfill(16)
+        return '1' + (bin(integer)[3:].zfill(15))
+
 
     def execute_LDR(self, R: str, EA: int):  # LDR
-        GPR_value = self.memory[EA].zfill(16)
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            self.GPR0_content['text'] = GPR_value
-        elif a == 1:
-            self.GPR1_content['text'] = GPR_value
-        elif a == 2:
-            self.GPR2_content['text'] = GPR_value
-        elif a == 3:
-            self.GPR3_content['text'] = GPR_value
+        if R == '00':
+            self.GPR0_content['text'] = self.memory[EA]
+        elif R == '01':
+            self.GPR1_content['text'] = self.memory[EA]
+        elif R == '10':
+            self.GPR2_content['text'] = self.memory[EA]
+        else:
+            self.GPR3_content['text'] = self.memory[EA]
 
     def execute_STR(self, R: str, EA: int):
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            self.GPR0_value = self.GPR0_content.cget('text')
-            self.memory[EA] = self.GPR0_value
-        elif a == 1:
-            self.GPR1_value = self.GPR1_content.cget('text')
-            self.memory[EA] = self.GPR1_value
-        elif a == 2:
-            self.GPR2_value = self.GPR2_content.cget('text')
-            self.memory[EA] = self.GPR2_value
-        elif a == 3:
-            self.GPR3_value = self.GPR3_content.cget('text')
-            self.memory[EA] = self.GPR3_value
+        if R == '00':
+            self.memory[EA] = self.GPR0_content.cget('text')
+        elif R == '01':
+            self.memory[EA] = self.GPR1_content.cget('text')
+        elif R == '10':
+            self.memory[EA] = self.GPR2_content.cget('text')
+        else:
+            self.memory[EA] = self.GPR3_content.cget('text')
 
 
     def execute_LDA(self, R: str, EA: int):
-        GPR_value = self.convert_decimal_to_binary(EA).zfill(16)
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            self.GPR0_content['text'] = GPR_value
-        elif a == 1:
-            self.GPR1_content['text'] = GPR_value
-        elif a == 2:
-            self.GPR2_content['text'] = GPR_value
-        elif a == 3:
-            self.GPR3_content['text'] = GPR_value
+        if R == '00':
+            self.GPR0_content['text'] = self.convert_decimal_to_binary(EA)
+        elif R == '01':
+            self.GPR1_content['text'] = self.convert_decimal_to_binary(EA)
+        elif R == '10':
+            self.GPR2_content['text'] = self.convert_decimal_to_binary(EA)
+        else:
+            self.GPR3_content['text'] = self.convert_decimal_to_binary(EA)
 
 
     def execute_LDX(self, IX: str, EA: int):
-        a = self.convert_binary_to_decimal(IX)
-        IXR_value = self.memory[EA].zfill(16)
-        if a == 1:
-            self.IXR1_content['text'] = IXR_value
-        elif a == 2:
-            self.IXR2_content['text'] = IXR_value
-        elif a == 3:
-            self.IXR3_content['text'] = IXR_value
+        if IX == '01':
+            self.IXR1_content['text'] = self.memory[EA]
+        elif IX == '10':
+            self.IXR2_content['text'] = self.memory[EA]
+        elif IX == '11':
+            self.IXR3_content['text'] = self.memory[EA]
 
     def execute_STX(self, IX: str, EA: int):
         if IX == '01':
-            self.IXR1_value = self.IXR1_content.cget('text')
-            self.memory[EA] = self.IXR1_value
+            self.memory[EA] = self.IXR1_content.cget('text')
         elif IX == '10':
-            self.IXR2_value = self.IXR2_content.cget('text')
-            self.memory[EA] = self.IXR2_value
+            self.memory[EA] = self.IXR2_content.cget('text')
         elif IX == '11':
-            self.IXR3_value = self.IXR3_content.cget('text')
-            self.memory[EA] = self.IXR3_value
+            self.memory[EA] = self.IXR3_content.cget('text')
 
     def execute_AMR(self, R: str, EA: int):
         if R == '00':
             self.GPR0_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR0_content.cget('text')) +
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
         elif R == '01':
             self.GPR1_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR1_content.cget('text')) +
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
         elif R == '10':
             self.GPR2_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR2_content.cget('text')) +
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
         else:
             self.GPR3_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR3_content.cget('text')) +
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
 
     def execute_SMR(self, R: str, EA: int):
         if R == '00':
             self.GPR0_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR0_content.cget('text')) -
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
         elif R == '01':
             self.GPR1_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR1_content.cget('text')) -
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
         elif R == '10':
             self.GPR2_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR2_content.cget('text')) -
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
         else:
             self.GPR3_content['text'] = self.convert_decimal_to_binary(
                 self.convert_binary_to_decimal(self.GPR3_content.cget('text')) -
-                self.convert_binary_to_decimal(self.memory[EA])).zfill(16)
+                self.convert_binary_to_decimal(self.memory[EA]))
 
     def execute_AIR(self, R: str, Address: str):
         immed = self.convert_binary_to_decimal(Address)
         if R == '00':
             self.GPR0_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) + immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) + immed)
         elif R == '01':
             self.GPR1_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) + immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) + immed)
         elif R == '10':
             self.GPR2_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) + immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) + immed)
         else:
             self.GPR3_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) + immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) + immed)
 
     def execute_SIR(self, R: str, Address: str):
         immed = self.convert_binary_to_decimal(Address)
         if R == '00':
             self.GPR0_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) - immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR0_content.cget('text')) - immed)
         elif R == '01':
             self.GPR1_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) - immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR1_content.cget('text')) - immed)
         elif R == '10':
             self.GPR2_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) - immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR2_content.cget('text')) - immed)
         else:
             self.GPR3_content['text'] = self.convert_decimal_to_binary(
-                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) - immed).zfill(16)
+                self.convert_binary_to_decimal(self.GPR3_content.cget('text')) - immed)
 
     def load_file(self, file_name: str):
         # global location, instruction
@@ -630,119 +640,50 @@ class App(Tk):
                 self.memory[location] = instruction
 
 
-    def PC_plus_one (self):
-        PC_value = self.PC_content.cget('text')
-        PC_value = self.convert_decimal_to_binary(self.convert_binary_to_decimal(PC_value) + 1)
-        self.PC_content['text'] = PC_value.zfill(12)
+    def pc_plus_one (self):
+        self.PC_content['text'] = bin(int(self.PC_content.cget('text'), 2) + 1)[2:].zfill(12)
 
-    def get_GPR_content(self, R):
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            GPR_value = self.GPR0_content.cget('text')
-        elif a == 1:
-            GPR_value = self.GPR1_content.cget('text')
-        elif a == 2:
-            GPR_value = self.GPR2_content.cget('text')
-        elif a == 3:
-            GPR_value = self.GPR3_content.cget('text')
-        return GPR_value, a
 
-    def set_GPR_content(self, R, GPR_value):
-        a = self.convert_binary_to_decimal(R)
-        if a == 0:
-            self.GPR0_content['text'] = GPR_value
-        elif a == 1:
-            self.GPR1_content['text'] = GPR_value
-        elif a == 2:
-            self.GPR2_content['text'] = GPR_value
-        elif a == 3:
-            self.GPR3_content['text'] = GPR_value
+    def set_CC(self, index: int, cc_value: str):
+        cc_str = self.CC_content.cget('text')
+        cc_list = []
+        for cc in cc_str:
+            cc_list.append(cc)
+        cc_list[index] = cc_value
+        self.CC_content['text'] = ''.join(cc_list)
 
-    def get_IXR_content(self, IX):
-        a = self.convert_binary_to_decimal(IX)
-        if a == 1:
-            IXR_value = self.IXR1_content.cget('text')
-        elif a == 2:
-            IXR_value = self.IXR2_content.cget('text')
-        elif a == 3:
-            IXR_value = self.IXR3_content.cget('text')
-        return IXR_value, a
 
-    def Set_CC(self, Overflow, Underflow, DivZero, EqualOrNot):
-        CC_value_list = list(self.CC_content.cget('text'))
-        print(Overflow, Underflow, DivZero, EqualOrNot)
-        if Overflow == 1:
-            CC_value_list[0] = '1'
-        elif Overflow == 0:
-            CC_value_list[0] = '0'
-        if Underflow == 1:
-            CC_value_list[1] = '1'
-        elif Underflow == 0:
-            CC_value_list[1] = '0'
-        if DivZero == 1:
-            CC_value_list[2] = '1'
-        elif DivZero == 0:
-            CC_value_list[2] = '0'
-        if EqualOrNot == 1:
-            CC_value_list[3] = '1'
-        if EqualOrNot == 0:
-            CC_value_list[3] = '0'
-        print(type(CC_value_list),CC_value_list)
-        CC_value = ''.join(CC_value_list)
-        print(type(CC_value), CC_value)
-        self.CC_content['text'] = CC_value
-
-    def Divide(self, number_first, number_second):
+    def divide(self, number_first, number_second):
         Quotient = number_first // number_second
         Reminder = number_first % number_second
         return Quotient, Reminder
 
     def execute_JZ(self, R: str, EA: int):
-        print(EA, R)
-        GPR_value, a = self.get_GPR_content(R)
-        b = self.convert_binary_to_decimal(GPR_value)
-        if b == 0:
-            c = self.convert_decimal_to_binary(EA)
-            self.PC_content['text'] = c.zfill(12);
-            print("c:",c.zfill(12))
+        GPR_value = self.get_GPR_content(R)
+        if GPR_value == '0000000000000000':
+            self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            self.PC_plus_one()
-            print("PC_value:")
+            self.pc_plus_one()
 
     def execute_JNE(self, R: str, EA: int):
-        GPR_value, a = self.get_GPR_content(R)
-        b = self.convert_binary_to_decimal(GPR_value)
-        if b != 0:
-            c = self.convert_decimal_to_binary(EA)
-            self.PC_content['text'] = c.zfill(12)
+        GPR_value = self.get_GPR_content(R)
+        if GPR_value != '0000000000000000':
+            self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            self.PC_plus_one()
+            self.pc_plus_one()
 
-    def execute_JCC(self, CC: str, address: int):
-        a = self.convert_binary_to_decimal(CC)
-        flag = 0
-        if a == 0:
-            if self.CC_value[0] == 1:
-                flag = 1
-        elif a == 1:
-            if self.CC_value[1] == 1:
-                flag = 1
-        elif a == 2:
-            if self.CC_value[2] == 1:
-                flag = 1
-        elif a == 3:
-            if self.CC_value[3] == 1:
-                flag = 1
-        if flag == 1:
-            self.PC_content['text'] = (self.convert_decimal_to_binary(address)).zfill(12)
+
+    def execute_JCC(self, cc: str, EA: int):
+        bit = int(cc, 2)
+        if self.CC_content.cget('text')[bit] == '1':
+            self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            self.PC_plus_one()
+            self.pc_plus_one()
 
 
-    def execute_JMA(self, address):
-        a = address
-        c = self.convert_decimal_to_binary(a)
-        self.PC_content['text'] = c.zfill(12)
+    def execute_JMA(self, EA: int):
+        self.PC_content['text'] = bin(EA)[2:].zfill(12)
+
 
     def execute_JSR(self, address):
         a = address + 1
@@ -751,29 +692,23 @@ class App(Tk):
         b = self.convert_decimal_to_binary(address)
         self.PC_content['text'] = b.zfill(12)
 
-    def execute_RFS(self, address):
+    def execute_RFS(self, immed: str):
         self.set_GPR_content('0',address.zfill(16))
         self.PC_content['text'] = self.GPR3_content.cget('text')[:12]
 
-    def execute_SOB(self, R, address):
-        GPR_value, a = self.get_GPR_content(R)
-        b = self.convert_binary_to_decimal(GPR_value) - 1
-        if b > 0:
-            c = self.convert_decimal_to_binary(address)
-            self.PC_content['text'] = c.zfill(12)
+    def execute_SOB(self, R: str, EA: int):
+        GPR_value = self.get_GPR_content(R)
+        if self.convert_binary_to_decimal(GPR_value) - 1 > 0:
+            self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            self.PC_plus_one()
+            self.pc_plus_one()
 
-    def execute_JGE(self, R, address):
-        GPR_value, a = self.get_GPR_content(R)
-        b = self.convert_binary_to_decimal(GPR_value)
-        if b >= 0:
-            print(111111)
-            c = self.convert_decimal_to_binary(address)
-            self.PC_content['text'] = c.zfill(12)
+    def execute_JGE(self, R: str, EA: int):
+        GPR_value = self.get_GPR_content(R)
+        if self.convert_binary_to_decimal(GPR_value) >= 0:
+            self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            print(222222)
-            self.PC_plus_one()
+            self.pc_plus_one()
 
     def execute_MLT(self, R, IX):
         if R == '00' or R == '10' or IX == '00' or IX == '10':
@@ -785,7 +720,7 @@ class App(Tk):
             Multiply_result = ac * bc
             print(Multiply_result)
             if Multiply_result > 65535:
-                self.Set_CC(1,2,2,2)
+                self.set_CC(1,2,2,2)
             else:
                 Multiply_result_binary = self.convert_decimal_to_binary(Multiply_result)
                 Multiply_result_binary = Multiply_result_binary.zfill(16)
@@ -836,84 +771,89 @@ class App(Tk):
                 self.GPR3_content['text'] = Quotient_binary
                 self.GPR0_content['text'] = Reminder_binary
 
-    def execute_TRR(self, R, IX):
-        GPR_value, a = self.get_GPR_content(R)
-        ac = self.convert_binary_to_decimal(GPR_value)
-        b = self.convert_binary_to_decimal(IX)
-        if b == 1:
-            IX_value = self.IXR1_content.cget('text')
-        elif b == 2:
-            IX_value = self.IXR2_content.cget('text')
-        elif b == 3:
-            IX_value = self.IXR3_content.cget('text')
-        bc = self.convert_binary_to_decimal(IX_value)
-        if ac == bc:
-            self.Set_CC(2, 2, 2, 1)
+    def execute_TRR(self, rx: str, ry: str):
+        rx_value = self.get_GPR_content(rx)
+        ry_value = self.get_GPR_content(ry)
+        if rx_value == ry_value:
+            self.set_CC(3, '1')
         else:
-            self.Set_CC(2, 2, 2, 0)
+            self.set_CC(3, '0')
 
-    def execute_AND(self, EA, R, IX):
-        GPR_value, a = self.get_GPR_content(R)
-        b = self.convert_binary_to_decimal(IX)
-        if b == 1:
-            IXR_value = self.IXR1_content['text']
-        elif b == 2:
-            IXR_value = self.IXR2_content['text']
-        elif b == 3:
-            IXR_value = self.IXR3_content['text']
-        new_rx = ''
-        for i in range(16) :
-            if GPR_value[i] == '1' and IXR_value[i] == '1':
-                new_rx= new_rx+'1'
+    def execute_AND(self, rx: str, ry: str):
+        rx_value = self.get_GPR_content(rx)
+        ry_value = self.get_GPR_content(ry)
+        ans = ''
+        for i in range(len(rx_value)):
+            if rx_value[i] == '1' and ry_value[i] == '1':
+                ans += '1'
             else:
-                new_rx= new_rx+'0'
-        self.set_GPR_content(a, new_rx)
+                ans += '0'
+        self.set_GPR_content(rx, ans)
 
-    def execute_ORR(self, R, IX):
-        GPR_value, a = self.get_GPR_content(R)
-        b = self.convert_binary_to_decimal(IX)
-        if b == 1:
-            IXR_value = self.IXR1_content['text']
-        elif b == 2:
-            IXR_value = self.IXR2_content['text']
-        elif b == 3:
-            IXR_value = self.IXR3_content['text']
-        new_rx = ''
-        for i in range(16):
-            if GPR_value[i] == '1' or IXR_value[i] == '1':
-                new_rx = new_rx + '1'
+
+    def execute_ORR(self, rx: str, ry: str):
+        rx_value = self.get_GPR_content(rx)
+        ry_value = self.get_GPR_content(ry)
+        ans = ''
+        for i in range(len(rx_value)):
+            if rx_value[i] == '1' or ry_value[i] == '1':
+                ans += '1'
             else:
-                new_rx = new_rx + '0'
-        print("new_rx:" + new_rx)
-        self.set_GPR_content(a, new_rx)
+                ans += '0'
+        self.set_GPR_content(rx, ans)
 
-    def execute_NOT(self, R):
-        GPR_value, a = self.get_GPR_content(R)
-        new_rx = ''
-        print("GPR" + GPR_value)
-        for i in range(16):
-            if GPR_value[i] == '1':
-                new_rx = new_rx + '0'
+
+    def execute_NOT(self, rx: str):
+        rx_value = self.get_GPR_content(rx)
+        ans = ''
+        for i in range(len(rx_value)):
+            if rx_value[i] == '1':
+                ans += '0'
             else:
-                new_rx = new_rx + '1'
-        print("~GPR" + new_rx)
-        self.set_GPR_content(a, new_rx)
+                ans += '1'
+        self.set_GPR_content(rx, ans)
 
-    def execute_SRC(self, R: str, Count: int, LR: int):
-        GPR_value, a = self.get_GPR_content(R)
-        if Count == 0:
-            return
-        if LR == 1:
-            content_list = list(GPR_value[16 - Count:])
-            for i in range(16 - Count):
-                content_list.append('0')
-            GPR_value = ''.join(content_list)
+
+    def execute_SRC(self, R: str, A_L: str, L_R: str, count: str):
+        GPR_value= self.get_GPR_content(R)
+        count_int = int(count, 2)
+        if A_L == '1' and L_R == '1':
+            GPR_value = GPR_value[count_int:]
+            for i in range(count_int):
+                GPR_value += '0'
             self.set_GPR_content(R, GPR_value)
-            print(1)
-        elif LR == 0:
-            print(2)
-            self.set_GPR_content(R, GPR_value[:16 - Count].zfill(16))
+        elif A_L == '1' and L_R == '0':
+            GPR_value = GPR_value[:len(GPR_value) - count_int]
+            for i in range(count_int):
+                GPR_value = '0' + GPR_value
+            self.set_GPR_content(R, GPR_value)
+        elif A_L == '0' and L_R == '1':
+            GPR_value = GPR_value[count_int:]
+            for i in range(count_int):
+                GPR_value += '0'
+            self.set_GPR_content(R, GPR_value)
+        else:
+            if GPR_value[0] == '1':
+                GPR_value = GPR_value[:len(GPR_value) - count_int]
+                for i in range(count_int):
+                    GPR_value = '1' + GPR_value
+                self.set_GPR_content(R, GPR_value)
+            else:
+                GPR_value = GPR_value[:len(GPR_value) - count_int]
+                for i in range(count_int):
+                    GPR_value = '0' + GPR_value
+                self.set_GPR_content(R, GPR_value)
 
+
+    def execute_RRC(self, R: str, A_L: str, L_R: str, count: str):
+        GPR_value = self.get_GPR_content(R)
+        count_int = int(count, 2)
+        if A_L == '1' and L_R == '1':
+            GPR_value = GPR_value[count_int:] + GPR_value[:count_int]
+            self.set_GPR_content(R, GPR_value)
+        elif A_L == '1' and L_R == '0':
+            GPR_value = GPR_vlaue[len(GPR_value) - count_int:] + GPR_value[:len(GPR_value) - count_int]
+            self.set_GPR_content(R, GPR_value)
 
 if __name__ == "__main__":
     app = App()
