@@ -288,7 +288,7 @@ class App(Tk):
             self.IXR1_content['text'] = "0000000000000000"
             self.IXR2_content['text'] = "0000000000000000"
             self.IXR3_content['text'] = "0000000000000000"
-            self.PC_content['text'] = "000000001000"
+            self.PC_content['text'] = "000000000110"
             self.MAR_content['text'] = "000000000000"
             self.MBR_content['text'] = "0000000000000000"
             self.IR_content['text'] = "0000000000000000"
@@ -305,7 +305,7 @@ class App(Tk):
             self.instruction_controller(self.memory[jj])
 
         elif number_LD == 16:
-            for iii in range(15):
+            for iii in range():
                 if self.PC_next < 14:
                     PC_value = self.PC_content.cget("text")
                     jj = self.convert_binary_to_decimal(PC_value.zfill(12))  # MAR_value
@@ -390,11 +390,11 @@ class App(Tk):
         L_R = instruction[9]
         count = instruction[12:]
         EA = self.getEA(IX, I, Address)
-        print(Opcode,R,IX,I,Address,EA)
         if Opcode == '000000':
             Halt_content = Label(self, width=2, bg="red", text="")
             Halt_content.grid(row=17, column=21)
             Halt_content.place(x=680, y=240)
+            
         elif Opcode == '000001':
             self.execute_LDR(R, EA)
         elif Opcode == '000010':
@@ -648,7 +648,9 @@ class App(Tk):
         if self.convert_binary_to_decimal(self.get_GPR_content(R)) > 0:
             self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            self.pc_plus_one()
+            # self.pc_plus_one()
+            print(self.PC_content['text'])
+            print(self.memory[11])
 
     def execute_JGE(self, R: str, EA: int):
         GPR_value = self.get_GPR_content(R)
@@ -792,12 +794,17 @@ class App(Tk):
                 self.set_GPR_content(R, GPR_value)
 
     def execute_IN(self, R, address):
-        answer = simpledialog.askinteger("Input", "please enter an integer")
-        self.set_GPR_content(R, self.convert_decimal_to_binary(answer))
+        if address == '00000':
+            answer = simpledialog.askinteger("Input", "please enter an integer")
+            self.set_GPR_content(R, self.convert_decimal_to_binary(answer))
 
     def execute_OUT(self, R, address):
-        GPR_value, a = self.get_GPR_content(R)
-        messagebox.showinfo("Information", GPR_value)
+        if address == '00001':
+            GPR_value = self.get_GPR_content(R)
+            messagebox.showinfo("Information", GPR_value)
+
+    def execute_CHK(self, R: str, address: str) -> bool:
+        return True
 
 
 
