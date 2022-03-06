@@ -242,7 +242,6 @@ class App(Tk):
         self.L_long = 0
         self.L_short = 0
         self.PC_next = 0
-        self.execute_HLT()
 
 
 
@@ -302,18 +301,19 @@ class App(Tk):
             instruction = self.memory[int(self.PC_content.cget("text"), 2)]
             self.instruction_controller(instruction)
             opcode = instruction[:6]
-            if opcode != '001000' and opcode != '001001' and opcode != '001010' and opcode != '001011' and opcode != '001100' and opcode != '' and opcode != '001110' and opcode != '001111':
+            print(opcode)
+            if opcode != '001110':
                 self.pc_plus_one()
         elif number_LD == 16:
-            instruction = self.memory[int(self.PC_content.cget("text"), 2)]
             while True:
+                instruction = self.memory[int(self.PC_content.cget("text"), 2)]
                 self.instruction_controller(instruction)
                 opcode = instruction[:6]
+                print(opcode)
                 if opcode == '000000':
                     return
-                if opcode != '001000' and opcode != '001001' and opcode != '001010' and opcode != '001011' and opcode != '001100' and opcode != '' and opcode != '001110' and opcode != '001111':
+                if opcode != '001110':
                     self.pc_plus_one()
-                instruction = self.memory[int(self.PC_content.cget("text"), 2)]
         elif number_LD == 17:
             for abccc in range(0, 4095, 4):
                 print("Address", abccc, ":", "value:", self.memory[abccc],"Address", abccc+1, ":", "value:", self.memory[abccc+1],"Address", abccc+2, ":", "value:", self.memory[abccc+2],"Address", abccc+3, ":", "value:", self.memory[abccc+3])
@@ -388,10 +388,7 @@ class App(Tk):
         count = instruction[12:]
         EA = self.getEA(IX, I, Address)
         if Opcode == '000000':
-            Halt_content = Label(self, width=2, bg="red", text="")
-            Halt_content.grid(row=17, column=21)
-            Halt_content.place(x=680, y=240)
-            
+            self.execute_HLT()
         elif Opcode == '000001':
             self.execute_LDR(R, EA)
         elif Opcode == '000010':
@@ -449,8 +446,7 @@ class App(Tk):
             self.execute_OUT(R, Address)
         elif Opcode == '110011':#完成
             self.execute_CHK(R, Address)
-        elif Opcode == '000000':
-            self.execute_HLT()
+
 
         self.MAR_content['text'] = Address.zfill(12)
         self.MAR_value = self.MAR_content.cget('text')
@@ -817,6 +813,8 @@ class App(Tk):
     def execute_HLT(self):
         self.button_SS.config(state=tkinter.DISABLED)
         self.button_Run.config(state=tkinter.DISABLED)
+        self.Halt_content['bg'] = 'red'
+
 
 if __name__ == "__main__":
     app = App()
