@@ -242,6 +242,7 @@ class App(Tk):
         self.L_long = 0
         self.L_short = 0
         self.PC_next = 0
+        self.execute_HLT()
 
 
 
@@ -298,25 +299,21 @@ class App(Tk):
             self.Privileged_content['bg'] ="white"
             self.load_file("IPL.txt")
         elif number_LD == 15:
-            PC_value = self.PC_content.cget("text")
-            jj = self.convert_binary_to_decimal(PC_value.zfill(12))#MAR_value
-            PC_value = self.convert_decimal_to_binary(self.convert_binary_to_decimal(PC_value) + 1)
-            self.PC_content['text'] = PC_value.zfill(12)
-            self.instruction_controller(self.memory[jj])
-
+            instruction = self.memory[int(self.PC_content.cget("text"), 2)]
+            self.instruction_controller(instruction)
+            opcode = instruction[:6]
+            if opcode != '001000' and opcode != '001001' and opcode != '001010' and opcode != '001011' and opcode != '001100' and opcode != '' and opcode != '001110' and opcode != '001111':
+                self.pc_plus_one()
         elif number_LD == 16:
-            for iii in range():
-                if self.PC_next < 14:
-                    PC_value = self.PC_content.cget("text")
-                    jj = self.convert_binary_to_decimal(PC_value.zfill(12))  # MAR_value
-                    PC_value = self.convert_decimal_to_binary(self.convert_binary_to_decimal(PC_value) + 1)
-                    self.instruction_controller(self.memory[jj])
-                    self.PC_content['text'] = PC_value.zfill(12)
-                    self.Halt_content['bg'] = "red"
-                else:
-                    self.Run_content['bg'] = "white"
-
-
+            instruction = self.memory[int(self.PC_content.cget("text"), 2)]
+            while True:
+                self.instruction_controller(instruction)
+                opcode = instruction[:6]
+                if opcode == '000000':
+                    return
+                if opcode != '001000' and opcode != '001001' and opcode != '001010' and opcode != '001011' and opcode != '001100' and opcode != '' and opcode != '001110' and opcode != '001111':
+                    self.pc_plus_one()
+                instruction = self.memory[int(self.PC_content.cget("text"), 2)]
         elif number_LD == 17:
             for abccc in range(0, 4095, 4):
                 print("Address", abccc, ":", "value:", self.memory[abccc],"Address", abccc+1, ":", "value:", self.memory[abccc+1],"Address", abccc+2, ":", "value:", self.memory[abccc+2],"Address", abccc+3, ":", "value:", self.memory[abccc+3])
@@ -452,6 +449,8 @@ class App(Tk):
             self.execute_OUT(R, Address)
         elif Opcode == '110011':#完成
             self.execute_CHK(R, Address)
+        elif Opcode == '000000':
+            self.execute_HLT()
 
         self.MAR_content['text'] = Address.zfill(12)
         self.MAR_value = self.MAR_content.cget('text')
@@ -648,9 +647,7 @@ class App(Tk):
         if self.convert_binary_to_decimal(self.get_GPR_content(R)) > 0:
             self.PC_content['text'] = bin(EA)[2:].zfill(12)
         else:
-            # self.pc_plus_one()
-            print(self.PC_content['text'])
-            print(self.memory[11])
+            self.pc_plus_one()
 
     def execute_JGE(self, R: str, EA: int):
         GPR_value = self.get_GPR_content(R)
@@ -807,10 +804,6 @@ class App(Tk):
         return True
 
 
-
-
-
-
     def execute_RRC(self, R: str, A_L: str, L_R: str, count: str):
         GPR_value = self.get_GPR_content(R)
         count_int = int(count, 2)
@@ -820,6 +813,10 @@ class App(Tk):
         elif A_L == '1' and L_R == '0':
             GPR_value = GPR_value[len(GPR_value) - count_int:] + GPR_value[:len(GPR_value) - count_int]
             self.set_GPR_content(R, GPR_value)
+
+    def execute_HLT(self):
+        self.button_SS.config(state=tkinter.DISABLED)
+        self.button_Run.config(state=tkinter.DISABLED)
 
 if __name__ == "__main__":
     app = App()
