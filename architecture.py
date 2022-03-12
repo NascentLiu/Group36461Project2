@@ -13,7 +13,7 @@ class Architecture:
         self.__IXR1 = Register()
         self.__IXR2 = Register()
         self.__IXR3 = Register()
-        self.__PC = ProgramCounter(10)
+        self.__PC = ProgramCounter(256)
         self.__MAR = Register()
         self.__MBR = Register()
         self.__IR = Register()
@@ -232,12 +232,9 @@ class Architecture:
     def execute_JMA(self, EA: int):
         self.__PC.setValue(EA)
 
-    # def execute_JSR(self, address):
-    #     a = address + 1
-    #     c = self.convert_decimal_to_binary(a)
-    #     self.GPR3_content['text'] = c.zfill(16)
-    #     b = self.convert_decimal_to_binary(address)
-    #     self.PC_content['text'] = b.zfill(12)
+    def execute_JSR(self, EA: int):
+        self.__GPR3.setValue(self.__PC.pc_plus_one())
+        self.__PC.setValue(EA)
     #
     # def execute_RFS(self, immed: str):
     #     self.set_GPR_content('0',immed.zfill(16))
@@ -260,7 +257,10 @@ class Architecture:
         self.set_GPR_content(R, self.get_GPR_content(R) + self.__memory.getValue(EA))
 
     def execute_SMR(self, R: str, EA: int):
+        print(R)
+
         self.set_GPR_content(R, self.get_GPR_content(R) - self.__memory.getValue(EA))
+        print(self.get_GPR_content(R) - self.__memory.getValue(EA))
 
     def execute_AIR(self, R: str, Address: str):
         immed = self.convert_binary_to_decimal(Address)

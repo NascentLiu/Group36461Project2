@@ -283,13 +283,14 @@ class App(Tk):
             self.MBR_content['text'] = self.memory[MAR_value]
         elif number_LD == 14:
             self.showMessage()
-        # elif number_LD == 15:
-        #     # instruction = self.memory[int(self.PC_content.cget("text"), 2)]
-        #     # self.instruction_controller(instruction)
-        #     # opcode = instruction[:6]
-        #     # print(opcode)
-        #     # if opcode != '001110':
-        #     #     self.pc_plus_one()
+            self.load_file("IPL.txt")
+        elif number_LD == 15:
+            instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
+            self.executeInstruction(instruction)
+            opcode = self.convert_decimal_to_binary(instruction)[0:6]
+            print(opcode)
+            if opcode != '001110':
+                self.architecture.getProgramCounter().pc_plus_one()
         elif number_LD == 16:
             while True:
                 instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
@@ -400,6 +401,7 @@ class App(Tk):
             messagebox.showinfo("Information", self.architecture.getOutput())
         else:
             self.architecture.instruction_controller(instruction)
+        self.showMessage()
 
     def execute_HLT(self):
         self.button_SS.config(state=tkinter.DISABLED)
@@ -422,7 +424,6 @@ class App(Tk):
         self.Halt_content['bg'] = "white"
         self.MFR_content['bg'] = "white"
         self.Privileged_content['bg'] = "white"
-        self.load_file("IPL.txt")
 
 if __name__ == "__main__":
     app = App()
