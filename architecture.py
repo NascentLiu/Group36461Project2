@@ -13,13 +13,57 @@ class Architecture:
         self.__IXR1 = Register()
         self.__IXR2 = Register()
         self.__IXR3 = Register()
-        self.__PC = ProgramCounter()
+        self.__PC = ProgramCounter(10)
         self.__MAR = Register()
         self.__MBR = Register()
         self.__IR = Register()
         self.__MFR = Register()
         self.__memory = Memory()
         self.__conditioncode = ConditionCode()
+        self.__input = 0
+        self.__output = 0
+
+    def getMemory(self):
+        return self.__memory
+
+    def getOutput(self):
+        return self.__output
+
+    def getProgramCounter(self):
+        return self.__PC
+
+    def getGPR0(self):
+        return self.__GPR0
+
+    def getGPR1(self):
+        return self.__GPR1
+
+    def getGPR2(self):
+        return self.__GPR2
+
+    def getGPR3(self):
+        return self.__GPR3
+
+    def getIXR1(self):
+        return self.__IXR1
+
+    def getIXR2(self):
+        return self.__IXR2
+
+    def getIXR3(self):
+        return self.__IXR3
+
+    def getMAR(self):
+        return self.__MAR
+
+    def getMBR(self):
+        return self.__MBR
+
+    def getIR(self):
+        return self.__IR
+
+    def getMFR(self):
+        return self.__MFR
 
     def instruction_controller(self, instruction: str):
         Opcode = instruction[:6]
@@ -50,9 +94,9 @@ class Architecture:
             self.execute_JCC(R, EA)
         elif Opcode == '001011':#完成
             self.execute_JMA(EA)
-        elif Opcode == '':#不知道argument是啥
+        elif Opcode == '999999':#不知道argument是啥
             self.execute_JSR(EA)
-        elif Opcode == '':
+        elif Opcode == '999998':
             self.execute_RFS(Address)
         elif Opcode == '001110':#完成
             self.execute_SOB(R, EA)
@@ -66,9 +110,9 @@ class Architecture:
             self.execute_AIR(R, Address)
         elif Opcode == '000111':
             self.execute_SIR(R, Address)
-        elif Opcode == '':#完成
+        elif Opcode == '999997':#完成
             self.execute_MLT(R, IX)
-        elif Opcode == '':#完成
+        elif Opcode == '999996':#完成
             self.execute_DVD(R, IX)
         elif Opcode == '010010':#完成
             self.execute_TRR(R, IX)
@@ -85,15 +129,12 @@ class Architecture:
         elif Opcode == '110001':#完成
             self.execute_IN(R, Address)
         elif Opcode == '110010':#完成
-            self.execute_OUT(R, Address)
+            self.__output = self.execute_OUT(R, Address)
         elif Opcode == '110011':#完成
             self.execute_CHK(R, Address)
-        self.MAR_content['text'] = Address.zfill(12)
-        self.MAR_value = self.MAR_content.cget('text')
-        cc = self.convert_binary_to_decimal(self.MAR_value)
-        dd = self.memory[cc]
-        self.MBR_content['text'] = dd
-        self.IR_content['text'] = instruction
+        self.__MAR.setValue(self.convert_binary_to_decimal(Address))
+        self.__MBR.setValue(self.__memory.getValue(self.__MAR.getValue()))
+        self.__IR.setValue(self.convert_binary_to_decimal(instruction))
 
     def getEA(self, IX: str, I: str, Address: str) -> int:
         if IX == '00':
@@ -148,6 +189,9 @@ class Architecture:
             self.__IXR2.setValue(IXR_value)
         elif IX == '11':
             self.__IXR3.setValue(IXR_value)
+
+    def setInput(self, input: int):
+        self.__input = input
 
     def execute_LDR(self, R: str, EA: int):  # LDR
         self.set_GPR_content(R, self.__memory.getValue(EA))
@@ -328,31 +372,52 @@ class Architecture:
         self.set_GPR_content(rx, self.convert_binary_to_decimal(ans))
 
     def execute_SRC(self, R: str, A_L: str, L_R: str, count: str):
-        GPR_value= self.get_GPR_content(R)
+        GPR_value= self.convert_decimal_to_binary(self.get_GPR_content(R))
         count_int = int(count, 2)
         if A_L == '1' and L_R == '1':
             GPR_value = GPR_value[count_int:]
             for i in range(count_int):
                 GPR_value += '0'
-            self.set_GPR_content(R, GPR_value)
+            self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
         elif A_L == '1' and L_R == '0':
             GPR_value = GPR_value[:len(GPR_value) - count_int]
             for i in range(count_int):
                 GPR_value = '0' + GPR_value
-            self.set_GPR_content(R, GPR_value)
+            self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
         elif A_L == '0' and L_R == '1':
             GPR_value = GPR_value[count_int:]
             for i in range(count_int):
                 GPR_value += '0'
-            self.set_GPR_content(R, GPR_value)
+            self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
         else:
             if GPR_value[0] == '1':
                 GPR_value = GPR_value[:len(GPR_value) - count_int]
                 for i in range(count_int):
                     GPR_value = '1' + GPR_value
-                self.set_GPR_content(R, GPR_value)
+                self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
             else:
                 GPR_value = GPR_value[:len(GPR_value) - count_int]
                 for i in range(count_int):
                     GPR_value = '0' + GPR_value
-                self.set_GPR_content(R, GPR_value)
+                self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
+
+    def execute_RRC(self, R: str, A_L: str, L_R: str, count: str):
+        GPR_value = self.convert_decimal_to_binary(self.get_GPR_content(R))
+        count_int = int(count, 2)
+        if A_L == '1' and L_R == '1':
+            GPR_value = GPR_value[count_int:] + GPR_value[:count_int]
+            self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
+        elif A_L == '1' and L_R == '0':
+            GPR_value = GPR_value[len(GPR_value) - count_int:] + GPR_value[:len(GPR_value) - count_int]
+            self.set_GPR_content(R, self.convert_binary_to_decimal(GPR_value))
+
+    def execute_IN(self, R: str, address: str):
+        if address == '00000':
+            self.set_GPR_content(R, self.__input)
+
+    def execute_OUT(self, R: str, address: str) -> int:
+        if address == '00001':
+            return self.get_GPR_content(R)
+
+    def execute_CHK(self, R: str, address: str) -> bool:
+        return True

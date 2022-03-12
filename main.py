@@ -2,6 +2,7 @@ import tkinter.filedialog
 from tkinter import *
 from tkinter import simpledialog
 from tkinter import messagebox
+from architecture import Architecture
 
 class App(Tk):
     def __init__(self):
@@ -238,10 +239,10 @@ class App(Tk):
         self.Run_label.grid(row=17, column=25)
         self.Run_label.place(x=790, y=240)
 
-        self.memory = ['0000000000000000'] * 4096
         self.L_long = 0
         self.L_short = 0
         self.PC_next = 0
+        self.architecture = Architecture()
 
 
 
@@ -281,42 +282,27 @@ class App(Tk):
             MAR_value = self.convert_binary_to_decimal(self.MAR_content.cget('text'))
             self.MBR_content['text'] = self.memory[MAR_value]
         elif number_LD == 14:
-            self.GPR0_content['text'] = "0000000000000000"
-            self.GPR1_content['text'] = "0000000000000000"
-            self.GPR2_content['text'] = "0000000000000000"
-            self.GPR3_content['text'] = "0000000000000000"
-            self.IXR1_content['text'] = "0000000000000000"
-            self.IXR2_content['text'] = "0000000000000000"
-            self.IXR3_content['text'] = "0000000000000000"
-            self.PC_content['text'] = "000000000110"
-            self.MAR_content['text'] = "000000000000"
-            self.MBR_content['text'] = "0000000000000000"
-            self.IR_content['text'] = "0000000000000000"
-            self.Run_content['bg'] = "white"
-            self.Halt_content['bg'] = "white"
-            self.MFR_content['bg'] = "white"
-            self.Privileged_content['bg'] ="white"
-            self.load_file("IPL.txt")
-        elif number_LD == 15:
-            instruction = self.memory[int(self.PC_content.cget("text"), 2)]
-            self.instruction_controller(instruction)
-            opcode = instruction[:6]
-            print(opcode)
-            if opcode != '001110':
-                self.pc_plus_one()
+            self.showMessage()
+        # elif number_LD == 15:
+        #     # instruction = self.memory[int(self.PC_content.cget("text"), 2)]
+        #     # self.instruction_controller(instruction)
+        #     # opcode = instruction[:6]
+        #     # print(opcode)
+        #     # if opcode != '001110':
+        #     #     self.pc_plus_one()
         elif number_LD == 16:
             while True:
-                instruction = self.memory[int(self.PC_content.cget("text"), 2)]
-                self.instruction_controller(instruction)
-                opcode = instruction[:6]
+                instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
+                self.executeInstruction(instruction)
+                opcode = self.convert_decimal_to_binary(instruction)[0:6]
                 print(opcode)
                 if opcode == '000000':
                     return
                 if opcode != '001110':
-                    self.pc_plus_one()
-        elif number_LD == 17:
-            for abccc in range(0, 4095, 4):
-                print("Address", abccc, ":", "value:", self.memory[abccc],"Address", abccc+1, ":", "value:", self.memory[abccc+1],"Address", abccc+2, ":", "value:", self.memory[abccc+2],"Address", abccc+3, ":", "value:", self.memory[abccc+3])
+                    self.architecture.getProgramCounter().pc_plus_one()
+        # elif number_LD == 17:
+        #     # for abccc in range(0, 4095, 4):
+        #     #     print("Address", abccc, ":", "value:", self.memory[abccc],"Address", abccc+1, ":", "value:", self.memory[abccc+1],"Address", abccc+2, ":", "value:", self.memory[abccc+2],"Address", abccc+3, ":", "value:", self.memory[abccc+3])
 
     #get the value of 16 binary buttons
     def LD(self, number_LD):
@@ -377,14 +363,10 @@ class App(Tk):
             self.button_Address5['text'] = 1 - int(self.button_Address5.cget("text"));
 
     def convert_binary_to_decimal(self, binary: str) -> int:
-        if (binary[0] == '0'):
-            return int(binary, 2)
-        return -int(binary[1:], 2)
+        return int(binary, 2)
 
     def convert_decimal_to_binary(self, integer: int) -> str:
-        if integer >= 0:
-            return bin(integer)[2:].zfill(16)
-        return '1' + (bin(integer)[3:].zfill(15))
+        return bin(integer)[2:].zfill(16)
 
     def load_file(self, file_name: str):
         # global location, instruction
@@ -396,43 +378,51 @@ class App(Tk):
                 # Convert to Integer
                 location = int(words[0], base=16)
                 # Convert hexadecimal to a binary string
-                instruction = str(bin(int(words[1], base=16)))[2:].zfill(16)
-                self.memory[location] = instruction
+                instruction = int(words[1], base=16)
+                self.architecture.getMemory().setValue(location, instruction)
 
-    def divide(self, number_first, number_second):
-        Quotient = number_first // number_second
-        Reminder = number_first % number_second
-        return Quotient, Reminder
+    # def divide(self, number_first, number_second):
+    #     Quotient = number_first // number_second
+    #     Reminder = number_first % number_second
+    #     return Quotient, Reminder
 
-    def execute_IN(self, R, address):
-        if address == '00000':
+    def executeInstruction(self, instruction: int):
+        instruction = self.convert_decimal_to_binary(instruction)
+        opcode = instruction[0:6]
+        if opcode == "000000":
+            self.execute_HLT()
+        elif opcode == "110001":
             answer = simpledialog.askinteger("Input", "please enter an integer")
-            self.set_GPR_content(R, self.convert_decimal_to_binary(answer))
-
-    def execute_OUT(self, R, address):
-        if address == '00001':
-            GPR_value = self.get_GPR_content(R)
-            messagebox.showinfo("Information", GPR_value)
-
-    def execute_CHK(self, R: str, address: str) -> bool:
-        return True
-
-
-    def execute_RRC(self, R: str, A_L: str, L_R: str, count: str):
-        GPR_value = self.get_GPR_content(R)
-        count_int = int(count, 2)
-        if A_L == '1' and L_R == '1':
-            GPR_value = GPR_value[count_int:] + GPR_value[:count_int]
-            self.set_GPR_content(R, GPR_value)
-        elif A_L == '1' and L_R == '0':
-            GPR_value = GPR_value[len(GPR_value) - count_int:] + GPR_value[:len(GPR_value) - count_int]
-            self.set_GPR_content(R, GPR_value)
+            self.architecture.setInput(answer)
+            self.architecture.instruction_controller(instruction)
+        elif opcode == "110010":
+            self.architecture.instruction_controller(instruction)
+            messagebox.showinfo("Information", self.architecture.getOutput())
+        else:
+            self.architecture.instruction_controller(instruction)
 
     def execute_HLT(self):
         self.button_SS.config(state=tkinter.DISABLED)
         self.button_Run.config(state=tkinter.DISABLED)
         self.Halt_content['bg'] = 'red'
 
+    def showMessage(self):
+        self.GPR0_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR0().getValue())
+        self.GPR1_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR1().getValue())
+        self.GPR2_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR2().getValue())
+        self.GPR3_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR3().getValue())
+        self.IXR1_content['text'] = self.convert_decimal_to_binary(self.architecture.getIXR1().getValue())
+        self.IXR2_content['text'] = self.convert_decimal_to_binary(self.architecture.getIXR2().getValue())
+        self.IXR3_content['text'] = self.convert_decimal_to_binary(self.architecture.getIXR3().getValue())
+        self.PC_content['text'] = self.convert_decimal_to_binary(self.architecture.getProgramCounter().getValue())
+        self.MAR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMAR().getValue())
+        self.MBR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMBR().getValue())
+        self.IR_content['text'] = self.convert_decimal_to_binary(self.architecture.getIR().getValue())
+        self.Run_content['bg'] = "white"
+        self.Halt_content['bg'] = "white"
+        self.MFR_content['bg'] = "white"
+        self.Privileged_content['bg'] = "white"
+        self.load_file("IPL.txt")
 
 if __name__ == "__main__":
     app = App()
