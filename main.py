@@ -299,7 +299,7 @@ class App(Tk):
                 if opcode == '000000':
                     return
         elif number_LD == 17:
-            for abccc in range(200):
+            for abccc in range(2000):
                 # print("Address", abccc, ":", "value:", self.architecture.getMemory().getValue(abccc),"Address", abccc+1, ":", "value:", self.architecture.getMemory().getValue(abccc+1),"Address", abccc+2, ":", "value:", self.self.architecture.getMemory().getValue(abccc+3),"Address", abccc+3, ":", "value:", self.architecture.getMemory().getValue(abccc+3))
                 print(abccc, self.architecture.getMemory().getValue(abccc))
     #get the value of 16 binary buttons

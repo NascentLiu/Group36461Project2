@@ -158,9 +158,12 @@ class Architecture:
         elif Opcode == '110011':#完成
             self.execute_CHK(R, Address)
             self.__PC.pc_plus_one()
+        else:
+            self.__PC.pc_plus_one()
         # self.__MAR.setValue(EA)
         # self.__MBR.setValue(self.__memory.getValue(self.__MAR.getValue()))
         # self.__IR.setValue(self.convert_binary_to_decimal(instruction))
+
 
     def getEA(self, IX: str, I: str, Address: str) -> int:
         if IX == '00':
@@ -321,8 +324,8 @@ class Architecture:
         if self.get_GPR_content(ry) == 0:
             self.__conditioncode.setCCByIndex(2, '1')
         else:
-            quotient = self.get_GPR_content(rx) // self.set_GPR_content(ry)
-            remainder = self.get_GPR_content(rx) % self.set_GPR_content(ry)
+            quotient = self.get_GPR_content(rx) // self.get_GPR_content(ry)
+            remainder = self.get_GPR_content(rx) % self.get_GPR_content(ry)
             rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:]
             self.set_GPR_content(rx, quotient)
             self.set_GPR_content(rxNext, remainder)
@@ -418,7 +421,6 @@ class Architecture:
 
     def execute_OUT(self, R: str, address: str) -> int:
         if address == '00001':
-            print(self.get_GPR_content(R))
             return chr(self.get_GPR_content(R))
 
     def execute_CHK(self, R: str, address: str):
