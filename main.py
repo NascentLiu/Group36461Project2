@@ -3,6 +3,8 @@ from tkinter import *
 from tkinter import simpledialog
 from tkinter import messagebox
 from architecture import Architecture
+from register import Register
+from memory import Memory
 
 class App(Tk):
     def __init__(self):
@@ -288,19 +290,17 @@ class App(Tk):
             instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
             self.executeInstruction(instruction)
             opcode = self.convert_decimal_to_binary(instruction)[0:6]
-            print(opcode)
         elif number_LD == 16:
             while True:
                 instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
                 self.executeInstruction(instruction)
                 opcode = self.convert_decimal_to_binary(instruction)[0:6]
-                print(opcode)
                 if opcode == '000000':
                     return
-        # elif number_LD == 17:
-        #     # for abccc in range(0, 4095, 4):
-        #     #     print("Address", abccc, ":", "value:", self.memory[abccc],"Address", abccc+1, ":", "value:", self.memory[abccc+1],"Address", abccc+2, ":", "value:", self.memory[abccc+2],"Address", abccc+3, ":", "value:", self.memory[abccc+3])
-
+        elif number_LD == 17:
+            for abccc in range(200):
+                # print("Address", abccc, ":", "value:", self.architecture.getMemory().getValue(abccc),"Address", abccc+1, ":", "value:", self.architecture.getMemory().getValue(abccc+1),"Address", abccc+2, ":", "value:", self.self.architecture.getMemory().getValue(abccc+3),"Address", abccc+3, ":", "value:", self.architecture.getMemory().getValue(abccc+3))
+                print(abccc, self.architecture.getMemory().getValue(abccc))
     #get the value of 16 binary buttons
     def LD(self, number_LD):
         L1 = self.button_Operation1.cget("text")
@@ -384,7 +384,8 @@ class App(Tk):
         if opcode == "000000":
             self.execute_HLT()
         elif opcode == "110001":
-            answer = simpledialog.askinteger("Input", "please enter an integer")
+            answer = simpledialog.askstring("Input", "please enter an integer")
+            print(type(answer))
             self.architecture.setInput(answer)
             self.architecture.instruction_controller(instruction)
         elif opcode == "110010":
@@ -407,7 +408,7 @@ class App(Tk):
         self.IXR1_content['text'] = self.showMessageOfRegister(self.architecture.getIXR1())
         self.IXR2_content['text'] = self.showMessageOfRegister(self.architecture.getIXR2())
         self.IXR3_content['text'] = self.showMessageOfRegister(self.architecture.getIXR3())
-        self.PC_content['text'] = bin(self.architecture.getProgramCounter().getValue())[2:].zfill(16)
+        self.PC_content['text'] = bin(self.architecture.getProgramCounter().getValue())[2:].zfill(12)
         self.MAR_content['text'] = self.showMessageOfRegister(self.architecture.getMAR())
         self.MBR_content['text'] = self.showMessageOfRegister(self.architecture.getMBR())
         self.IR_content['text'] = self.showMessageOfRegister(self.architecture.getIR())
@@ -419,11 +420,11 @@ class App(Tk):
 
     def showMessageOfRegister(self, register: Register) -> str:
         if register.getValue() >= 65535:
-            bin(register.getValue())[-16:]
+            return bin(register.getValue())[-16:]
         elif register.getValue() >= 0:
-            bin(register.getValue())[2:].zfill(16)
+            return bin(register.getValue())[2:].zfill(16)
         else:
-            bin(register.getValue())[3:].zfill(16)
+            return bin(register.getValue())[3:].zfill(16)
 
 if __name__ == "__main__":
     app = App()

@@ -20,7 +20,7 @@ class Architecture:
         self.__MFR = Register()
         self.__memory = Memory()
         self.__conditioncode = ConditionCode()
-        self.__input = 0
+        self.__input = ''
         self.__output = 0
 
     def getMemory(self):
@@ -88,7 +88,7 @@ class Architecture:
             self.execute_LDA(R, EA)
             self.__PC.pc_plus_one()
         elif Opcode == '100001':
-            self.execute_LDX(IX, EA)
+            self.execute_LDX(IX, Address)
             self.__PC.pc_plus_one()
         elif Opcode == '100010':
             self.execute_STX(IX, EA)
@@ -155,9 +155,9 @@ class Architecture:
         elif Opcode == '110011':#完成
             self.execute_CHK(R, Address)
             self.__PC.pc_plus_one()
-        self.__MAR.setValue(EA)
-        self.__MBR.setValue(self.__memory.getValue(self.__MAR.getValue()))
-        self.__IR.setValue(self.convert_binary_to_decimal(instruction))
+        # self.__MAR.setValue(EA)
+        # self.__MBR.setValue(self.__memory.getValue(self.__MAR.getValue()))
+        # self.__IR.setValue(self.convert_binary_to_decimal(instruction))
 
     def getEA(self, IX: str, I: str, Address: str) -> int:
         if IX == '00':
@@ -225,8 +225,8 @@ class Architecture:
     def execute_LDA(self, R: str, EA: int):
         self.set_GPR_content(R, EA)
 
-    def execute_LDX(self, IX: str, EA: int):
-        self.set_IXR_content(IX, self.__memory.getValue(EA))
+    def execute_LDX(self, IX: str, Address: str):
+        self.set_IXR_content(IX, self.__memory.getValue(self.convert_binary_to_decimal(Address)))
 
     def execute_STX(self, IX: str, EA: int):
         self.__memory.setValue(EA, self.get_IXR_content(IX))
@@ -406,11 +406,23 @@ class Architecture:
 
     def execute_IN(self, R: str, address: str):
         if address == '00000':
-            self.set_GPR_content(R, self.__input)
+            char = self.__input[0:1]
+            if char == '':
+                self.set_GPR_content(R, 0)
+            else:
+                self.set_GPR_content(R, ord(char))
+                self.__input = self.__input[1:]
 
     def execute_OUT(self, R: str, address: str) -> int:
         if address == '00001':
-            return self.get_GPR_content(R)
+            print(self.get_GPR_content(R))
+            return chr(self.get_GPR_content(R))
 
-    def execute_CHK(self, R: str, address: str) -> bool:
-        return True
+    def execute_CHK(self, R: str, address: str):
+        if self.convert_binary_to_decimal(address) == 0:
+            self.set_GPR_content(R, 1)
+        else:
+            if len(self.__input) > 0:
+                self.set_GPR_content(R, 1)
+            else:
+                self.set_GPR_content(R, 0)
