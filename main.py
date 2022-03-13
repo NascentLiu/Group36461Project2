@@ -245,6 +245,7 @@ class App(Tk):
         self.L_short = 0
         self.PC_next = 0
         self.architecture = Architecture()
+        self.isActivateInputDialog = True
 
 
 
@@ -384,10 +385,13 @@ class App(Tk):
         if opcode == "000000":
             self.execute_HLT()
         elif opcode == "110001":
-            answer = simpledialog.askstring("Input", "please enter an integer")
-            print(type(answer))
-            self.architecture.setInput(answer)
+            if self.isActivateInputDialog == True:
+                answer = simpledialog.askstring("Input", "please enter an integer")
+                self.architecture.setInput(answer)
+                self.isActivateInputDialog = False
             self.architecture.instruction_controller(instruction)
+            if self.architecture.getInput() == '':
+                self.isActivateInputDialog = True
         elif opcode == "110010":
             self.architecture.instruction_controller(instruction)
             messagebox.showinfo("Information", self.architecture.getOutput())

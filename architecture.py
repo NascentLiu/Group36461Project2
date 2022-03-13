@@ -68,6 +68,9 @@ class Architecture:
     def getConditionCode(self):
         return self.__conditioncode
 
+    def getInput(self):
+        return self.__input
+
     def instruction_controller(self, instruction: str):
         Opcode = instruction[:6]
         R = instruction[6:8]
