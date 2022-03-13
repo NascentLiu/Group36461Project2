@@ -390,7 +390,7 @@ class App(Tk):
                 self.architecture.setInput(answer)
                 self.isActivateInputDialog = False
             self.architecture.instruction_controller(instruction)
-            if self.architecture.getInput() == '':
+            if self.architecture.getGPR0().getValue() == 0:
                 self.isActivateInputDialog = True
         elif opcode == "110010":
             self.architecture.instruction_controller(instruction)
