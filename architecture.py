@@ -65,6 +65,9 @@ class Architecture:
     def getMFR(self):
         return self.__MFR
 
+    def getConditionCode(self):
+        return self.__conditioncode
+
     def instruction_controller(self, instruction: str):
         Opcode = instruction[:6]
         R = instruction[6:8]
@@ -77,14 +80,19 @@ class Architecture:
         EA = self.getEA(IX, I, Address)
         if Opcode == '000001':
             self.execute_LDR(R, EA)
+            self.__PC.pc_plus_one()
         elif Opcode == '000010':
             self.execute_STR(R, EA)
+            self.__PC.pc_plus_one()
         elif Opcode == '000011':
             self.execute_LDA(R, EA)
+            self.__PC.pc_plus_one()
         elif Opcode == '100001':
             self.execute_LDX(IX, EA)
+            self.__PC.pc_plus_one()
         elif Opcode == '100010':
             self.execute_STX(IX, EA)
+            self.__PC.pc_plus_one()
         #从这开始project2了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         elif Opcode == '001000':#完成
             self.execute_JZ(R, EA)
@@ -94,9 +102,9 @@ class Architecture:
             self.execute_JCC(R, EA)
         elif Opcode == '001011':#完成
             self.execute_JMA(EA)
-        elif Opcode == '999999':#不知道argument是啥
+        elif Opcode == '001100':#不知道argument是啥
             self.execute_JSR(EA)
-        elif Opcode == '999998':
+        elif Opcode == '001101':
             self.execute_RFS(Address)
         elif Opcode == '001110':#完成
             self.execute_SOB(R, EA)
@@ -104,35 +112,50 @@ class Architecture:
             self.execute_JGE(R, EA)
         elif Opcode == '000100':
             self.execute_AMR(R, EA)
+            self.__PC.pc_plus_one()
         elif Opcode == '000101':
             self.execute_SMR(R, EA)
+            self.__PC.pc_plus_one()
         elif Opcode == '000110':
             self.execute_AIR(R, Address)
+            self.__PC.pc_plus_one()
         elif Opcode == '000111':
             self.execute_SIR(R, Address)
-        elif Opcode == '999997':#完成
+            self.__PC.pc_plus_one()
+        elif Opcode == '010000':#完成
             self.execute_MLT(R, IX)
-        elif Opcode == '999996':#完成
+            self.__PC.pc_plus_one()
+        elif Opcode == '010001':#完成
             self.execute_DVD(R, IX)
+            self.__PC.pc_plus_one()
         elif Opcode == '010010':#完成
             self.execute_TRR(R, IX)
+            self.__PC.pc_plus_one()
         elif Opcode == '010011':#完成
             self.execute_AND(R, IX)
+            self.__PC.pc_plus_one()
         elif Opcode == '010100':#完成
             self.execute_ORR(R, IX)
+            self.__PC.pc_plus_one()
         elif Opcode == '010101':#完成
             self.execute_NOT(R)
+            self.__PC.pc_plus_one()
         elif Opcode == '011001':#完成
             self.execute_SRC(R, A_L, L_R, count)
+            self.__PC.pc_plus_one()
         elif Opcode == '011010':#完成
             self.execute_RRC(R, A_L, L_R, count)
+            self.__PC.pc_plus_one()
         elif Opcode == '110001':#完成
             self.execute_IN(R, Address)
+            self.__PC.pc_plus_one()
         elif Opcode == '110010':#完成
             self.__output = self.execute_OUT(R, Address)
+            self.__PC.pc_plus_one()
         elif Opcode == '110011':#完成
             self.execute_CHK(R, Address)
-        self.__MAR.setValue(self.convert_binary_to_decimal(Address))
+            self.__PC.pc_plus_one()
+        self.__MAR.setValue(EA)
         self.__MBR.setValue(self.__memory.getValue(self.__MAR.getValue()))
         self.__IR.setValue(self.convert_binary_to_decimal(instruction))
 
@@ -233,12 +256,13 @@ class Architecture:
         self.__PC.setValue(EA)
 
     def execute_JSR(self, EA: int):
-        self.__GPR3.setValue(self.__PC.pc_plus_one())
+        self.__PC.pc_plus_one()
+        self.__GPR3.setValue(self.__PC.getValue())
         self.__PC.setValue(EA)
-    #
-    # def execute_RFS(self, immed: str):
-    #     self.set_GPR_content('0',immed.zfill(16))
-    #     self.PC_content['text'] = self.GPR3_content.cget('text')[:12]
+
+    def execute_RFS(self, immed: str):
+        self.__GPR0.setValue(self.convert_binary_to_decimal(immed))
+        self.__PC.setValue(self.get_GPR_content('11'))
 
     def execute_SOB(self, R: str, EA: int):
         self.set_GPR_content(R, self.get_GPR_content(R) - 1)
@@ -254,82 +278,51 @@ class Architecture:
             self.__PC.pc_plus_one()
 
     def execute_AMR(self, R: str, EA: int):
-        self.set_GPR_content(R, self.get_GPR_content(R) + self.__memory.getValue(EA))
+        value = self.get_GPR_content(R) + self.__memory.getValue(EA)
+        if value > 65535:
+            self.__conditioncode.setCCByIndex(0, '1')
+        self.set_GPR_content(R, value)
 
     def execute_SMR(self, R: str, EA: int):
-        print(R)
-
-        self.set_GPR_content(R, self.get_GPR_content(R) - self.__memory.getValue(EA))
-        print(self.get_GPR_content(R) - self.__memory.getValue(EA))
+        value = self.get_GPR_content(R) - self.__memory.getValue(EA)
+        if value < 0:
+            self.__conditioncode.setCCByIndex(1, '1')
+        self.set_GPR_content(R, value)
 
     def execute_AIR(self, R: str, Address: str):
         immed = self.convert_binary_to_decimal(Address)
-        self.set_GPR_content(R, self.get_GPR_content(R) + immed)
+        value = self.get_GPR_content(R) + immed
+        if value > 65535:
+            self.__conditioncode.setCCByIndex(0, '1')
+        self.set_GPR_content(R, value)
 
     def execute_SIR(self, R: str, Address: str):
         immed = self.convert_binary_to_decimal(Address)
-        self.set_GPR_content(R, self.get_GPR_content(R) - immed)
+        value = self.get_GPR_content(R) - immed
+        if value < 0:
+            self.__conditioncode.setCCByIndex(1, '1')
+        self.set_GPR_content(R, value)
 
-        # def execute_MLT(self, R, IX):
-        #     if R == '00' or R == '10' or IX == '00' or IX == '10':
-        #         print("jinlaile", R, IX)
-        #         GPR_value1 = self.get_GPR_content(R)
-        #         GPR_value2 = self.get_GPR_content(IX)
-        #         ac = self.convert_binary_to_decimal(GPR_value1)
-        #         bc = self.convert_binary_to_decimal(GPR_value2)
-        #         Multiply_result = ac * bc
-        #         print(Multiply_result)
-        #         if Multiply_result > 65535:
-        #             self.set_CC(1,2,2,2)
-        #         else:
-        #             Multiply_result_binary = self.convert_decimal_to_binary(Multiply_result)
-        #             Multiply_result_binary = Multiply_result_binary.zfill(16)
-        #             High_order_bit = Multiply_result_binary[:8] + '00000000'
-        #             Lower_order_bit = Multiply_result_binary[8:].zfill(16)
-        #             if a == 0:
-        #                 print(111)
-        #                 self.GPR0_content['text'] = High_order_bit
-        #                 self.GPR1_content['text'] = Lower_order_bit
-        #             elif a == 2:
-        #                 print(222)
-        #                 print(High_order_bit)
-        #                 print(Lower_order_bit)
-        #                 self.GPR2_content['text'] = High_order_bit
-        #                 self.GPR3_content['text'] = Lower_order_bit
-        #
-        #
-        # def execute_DVD(self, R, IX):
-        #     GPR_value = self.get_GPR_content(R)
-        #     ac = self.convert_binary_to_decimal(GPR_value)
-        #     b = self.convert_binary_to_decimal(IX)
-        #     if b == 1:
-        #         IX_value = self.IXR1_content.cget('text')
-        #     elif b == 2:
-        #         IX_value = self.IXR2_content.cget('text')
-        #     elif b == 3:
-        #         IX_value = self.IXR3_content.cget('text')
-        #     bc = self.convert_binary_to_decimal(IX_value)
-        #     if bc == 0:
-        #         self.Set_CC(2, 2, 1, 2)
-        #     else:
-        #         Quotient, Reminder = self.Divide(ac, bc)
-        #         print(ac, b, Quotient, Reminder)
-        #         Quotient_binary = self.convert_decimal_to_binary(Quotient)
-        #         Quotient_binary = Quotient_binary.zfill(16)
-        #         Reminder_binary = self.convert_decimal_to_binary(Reminder)
-        #         Reminder_binary = Reminder_binary.zfill(16)
-        #         if a == 0:
-        #             self.GPR0_content['text'] = Quotient_binary
-        #             self.GPR1_content['text'] = Reminder_binary
-        #         elif a == 1:
-        #             self.GPR1_content['text'] = Quotient_binary
-        #             self.GPR2_content['text'] = Reminder_binary
-        #         elif a == 2:
-        #             self.GPR2_content['text'] = Quotient_binary
-        #             self.GPR3_content['text'] = Reminder_binary
-        #         elif a == 3:
-        #             self.GPR3_content['text'] = Quotient_binary
-        #             self.GPR0_content['text'] = Reminder_binary
+    def execute_MLT(self, rx: str, ry: str):
+        value = self.get_GPR_content(rx) * self.get_GPR_content(ry)
+        rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:]
+        if value > 65535:
+            self.__conditioncode.setCCByIndex(0, '1')
+            product = bin(value)[2:].zfill(32)
+            self.set_GPR_content(rx, self.convert_binary_to_decimal(product[:16]))
+            self.set_GPR_content(rxNext, self.convert_binary_to_decimal(product[16:]))
+        else:
+            self.set_GPR_content(rxNext, value)
+
+    def execute_DVD(self, rx: str, ry: str):
+        if self.get_GPR_content(ry) == 0:
+            self.__conditioncode.setCCByIndex(2, '1')
+        else:
+            quotient = self.get_GPR_content(rx) // self.set_GPR_content(ry)
+            remainder = self.get_GPR_content(rx) % self.set_GPR_content(ry)
+            rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:]
+            self.set_GPR_content(rx, quotient)
+            self.set_GPR_content(rxNext, remainder)
 
     def execute_TRR(self, rx: str, ry: str):
         rx_value = self.get_GPR_content(rx)

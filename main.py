@@ -289,8 +289,6 @@ class App(Tk):
             self.executeInstruction(instruction)
             opcode = self.convert_decimal_to_binary(instruction)[0:6]
             print(opcode)
-            if opcode != '001110':
-                self.architecture.getProgramCounter().pc_plus_one()
         elif number_LD == 16:
             while True:
                 instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
@@ -299,8 +297,6 @@ class App(Tk):
                 print(opcode)
                 if opcode == '000000':
                     return
-                if opcode != '001110':
-                    self.architecture.getProgramCounter().pc_plus_one()
         # elif number_LD == 17:
         #     # for abccc in range(0, 4095, 4):
         #     #     print("Address", abccc, ":", "value:", self.memory[abccc],"Address", abccc+1, ":", "value:", self.memory[abccc+1],"Address", abccc+2, ":", "value:", self.memory[abccc+2],"Address", abccc+3, ":", "value:", self.memory[abccc+3])
@@ -382,11 +378,6 @@ class App(Tk):
                 instruction = int(words[1], base=16)
                 self.architecture.getMemory().setValue(location, instruction)
 
-    # def divide(self, number_first, number_second):
-    #     Quotient = number_first // number_second
-    #     Reminder = number_first % number_second
-    #     return Quotient, Reminder
-
     def executeInstruction(self, instruction: int):
         instruction = self.convert_decimal_to_binary(instruction)
         opcode = instruction[0:6]
@@ -409,21 +400,30 @@ class App(Tk):
         self.Halt_content['bg'] = 'red'
 
     def showMessage(self):
-        self.GPR0_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR0().getValue())
-        self.GPR1_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR1().getValue())
-        self.GPR2_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR2().getValue())
-        self.GPR3_content['text'] = self.convert_decimal_to_binary(self.architecture.getGPR3().getValue())
-        self.IXR1_content['text'] = self.convert_decimal_to_binary(self.architecture.getIXR1().getValue())
-        self.IXR2_content['text'] = self.convert_decimal_to_binary(self.architecture.getIXR2().getValue())
-        self.IXR3_content['text'] = self.convert_decimal_to_binary(self.architecture.getIXR3().getValue())
-        self.PC_content['text'] = self.convert_decimal_to_binary(self.architecture.getProgramCounter().getValue())
-        self.MAR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMAR().getValue())
-        self.MBR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMBR().getValue())
-        self.IR_content['text'] = self.convert_decimal_to_binary(self.architecture.getIR().getValue())
+        self.GPR0_content['text'] = self.showMessageOfRegister(self.architecture.getGPR0())
+        self.GPR1_content['text'] = self.showMessageOfRegister(self.architecture.getGPR1())
+        self.GPR2_content['text'] = self.showMessageOfRegister(self.architecture.getGPR2())
+        self.GPR3_content['text'] = self.showMessageOfRegister(self.architecture.getGPR3())
+        self.IXR1_content['text'] = self.showMessageOfRegister(self.architecture.getIXR1())
+        self.IXR2_content['text'] = self.showMessageOfRegister(self.architecture.getIXR2())
+        self.IXR3_content['text'] = self.showMessageOfRegister(self.architecture.getIXR3())
+        self.PC_content['text'] = bin(self.architecture.getProgramCounter().getValue())[2:].zfill(16)
+        self.MAR_content['text'] = self.showMessageOfRegister(self.architecture.getMAR())
+        self.MBR_content['text'] = self.showMessageOfRegister(self.architecture.getMBR())
+        self.IR_content['text'] = self.showMessageOfRegister(self.architecture.getIR())
+        self.CC_content['text'] = self.architecture.getConditionCode().getCode()
         self.Run_content['bg'] = "white"
         self.Halt_content['bg'] = "white"
         self.MFR_content['bg'] = "white"
         self.Privileged_content['bg'] = "white"
+
+    def showMessageOfRegister(self, register: Register) -> str:
+        if register.getValue() >= 65535:
+            bin(register.getValue())[-16:]
+        elif register.getValue() >= 0:
+            bin(register.getValue())[2:].zfill(16)
+        else:
+            bin(register.getValue())[3:].zfill(16)
 
 if __name__ == "__main__":
     app = App()

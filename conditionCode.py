@@ -1,6 +1,6 @@
 class ConditionCode:
     def __init__(self):
-        self.__code = "0000"
+        self.__code = "0000" # overflow, underflow, division by zero, equal-or-not
 
     def getCode(self):
         return self.__code
