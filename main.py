@@ -278,18 +278,18 @@ class App(Tk):
         elif number_LD == 10:
             self.MBR_content['text'] = self.L_long
         elif number_LD == 11:
-            MAR_value = self.convert_binary_to_decimal(self.MAR_content.cget('text'))
-            MBR_value = self.MBR_content.cget('text')
-            self.memory[MAR_value] = MBR_value
+            MAR_value = self.architecture.getMAR()
+            MBR_value = self.architecture.getMBR()
+            self.memory.setMemory(MAR_value, MBR_value)
         elif number_LD == 12:
-            MAR_value = self.convert_binary_to_decimal(self.MAR_content.cget('text'))
-            MBR_value = self.MBR_content.cget('text')
-            self.memory[MAR_value] = MBR_value
-            MAR_value = MAR_value + 1
-            self.MAR_content['text'] = self.convert_decimal_to_binary(MAR_value).zfill(12)
+            MAR_value = self.architecture.getMAR()
+            MBR_value = self.architecture.getMBR()
+            self.memory.setValue(MAR_value, MBR_value)
+            self.MAR_content['text'] = MAR_value + 1
         elif number_LD == 13:
-            MAR_value = self.convert_binary_to_decimal(self.MAR_content.cget('text'))
-            self.MBR_content['text'] = self.memory[MAR_value]
+            MAR_value = self.architecture.getMAR()
+            MBR_value = self.memory.getValue(MAR_value)
+            self.MBR_content['text'] = MBR_value
         elif number_LD == 14:
             self.showMessage()
             self.load_file("IPL.txt")
