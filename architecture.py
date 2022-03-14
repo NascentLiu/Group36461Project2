@@ -311,7 +311,7 @@ class Architecture:
 
     def execute_MLT(self, rx: str, ry: str):
         value = self.get_GPR_content(rx) * self.get_GPR_content(ry)
-        rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:]
+        rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:].zfill(2)
         if value > 65535:
             self.__conditioncode.setCCByIndex(0, '1')
             product = bin(value)[2:].zfill(32)
@@ -326,7 +326,7 @@ class Architecture:
         else:
             quotient = self.get_GPR_content(rx) // self.get_GPR_content(ry)
             remainder = self.get_GPR_content(rx) % self.get_GPR_content(ry)
-            rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:]
+            rxNext = bin(self.convert_binary_to_decimal(rx) + 1)[2:].zfill(2)
             self.set_GPR_content(rx, quotient)
             self.set_GPR_content(rxNext, remainder)
 

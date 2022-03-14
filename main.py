@@ -5,13 +5,15 @@ from tkinter import messagebox
 from architecture import Architecture
 from register import Register
 from memory import Memory
+import tkinter as tk
+import tkinter.scrolledtext as st
 
 class App(Tk):
     def __init__(self):
         super().__init__()
         # configure the root window
         self.title("GUI")
-        self.geometry('900x400')
+        self.geometry('900x900')
         # Initialize all Windows and buttons
         R = Label(self, text="")
         R.grid(row=0, column=1)
@@ -246,6 +248,10 @@ class App(Tk):
         self.PC_next = 0
         self.architecture = Architecture()
         self.isActivateInputDialog = True
+        self.text_area = st.ScrolledText(self, width=50, height=10, font=("Times New Roman", 15))
+        self.text_area.grid(row=7, column=20)
+        self.text_area.place(x=200, y=350)
+
 
 
 
@@ -394,7 +400,8 @@ class App(Tk):
                 self.isActivateInputDialog = True
         elif opcode == "110010":
             self.architecture.instruction_controller(instruction)
-            messagebox.showinfo("Information", self.architecture.getOutput())
+            # messagebox.showinfo("Information", self.architecture.getOutput())
+            self.text_area.insert(tk.INSERT, self.architecture.getOutput())
         else:
             self.architecture.instruction_controller(instruction)
         self.showMessage()
