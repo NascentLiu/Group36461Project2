@@ -275,21 +275,24 @@ class App(Tk):
             self.PC_content['text'] = self.L_short
         elif number_LD == 9:
             self.MAR_content['text'] = self.L_short
+            self.architecture.setMAR(self.L_short)
+            print(self.architecture.getMAR())
         elif number_LD == 10:
             self.MBR_content['text'] = self.L_long
+            self.architecture.setMBR(self.L_long)
         elif number_LD == 11:
             MAR_value = self.architecture.getMAR()
             MBR_value = self.architecture.getMBR()
-            self.memory.setMemory(MAR_value, MBR_value)
+            self.architecture.setMemory(MAR_value, MBR_value)
         elif number_LD == 12:
             MAR_value = self.architecture.getMAR()
             MBR_value = self.architecture.getMBR()
-            self.memory.setValue(MAR_value, MBR_value)
-            self.MAR_content['text'] = MAR_value + 1
+            self.architecture.setMemory(MAR_value, MBR_value)
+            self.MAR_content['text'] = self.convert_decimal_to_binary(MAR_value + 1)
+            self.architecture.setMAR(self.convert_decimal_to_binary(MAR_value + 1))
         elif number_LD == 13:
             MAR_value = self.architecture.getMAR()
-            MBR_value = self.memory.getValue(MAR_value)
-            self.MBR_content['text'] = MBR_value
+            self.MBR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMemory(MAR_value))
         elif number_LD == 14:
             self.showMessage()
             self.load_file("IPL.txt")
@@ -380,13 +383,10 @@ class App(Tk):
             # reading each line
             for line in file:
                 words = line.split()
-                print(words)
                 if words == []:
                     continue
                 if words[0] == "#":
                     continue
-                print(count)
-                count = count + 1
                 # Convert to Integer
                 location = int(words[0], base=16)
                 # Convert hexadecimal to a binary string

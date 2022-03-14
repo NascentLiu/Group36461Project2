@@ -26,6 +26,12 @@ class Architecture:
     def getMemory(self):
         return self.__memory
 
+    def getMemory(self, EA):
+        return self.__memory.getValue(EA)
+
+    def setMemory(self, EA, value):
+        self.__memory.setValue(EA, value)
+
     def getOutput(self):
         return self.__output
 
@@ -56,8 +62,14 @@ class Architecture:
     def getMAR(self):
         return self.__MAR
 
+    def setMAR(self, content: str):
+        self.__MAR = self.convert_binary_to_decimal(content)
+
     def getMBR(self):
         return self.__MBR
+
+    def setMBR(self, content: str):
+        self.__MBR = self.convert_binary_to_decimal(content)
 
     def getIR(self):
         return self.__IR
