@@ -9,7 +9,7 @@ class ConditionCode:
         self.__code = code
 
     def judgeCCBit(self, bit):
-        if self.__code[bit] == 1:
+        if self.__code[(3 - bit)] == 1:
             return True
         return False
 
