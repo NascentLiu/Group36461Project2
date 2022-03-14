@@ -375,10 +375,18 @@ class App(Tk):
     def load_file(self, file_name: str):
         # global location, instruction
         file_name = tkinter.filedialog.askopenfilename()
+        count = 0
         with open(file_name) as file:
             # reading each line
             for line in file:
                 words = line.split()
+                print(words)
+                if words == []:
+                    continue
+                if words[0] == "#":
+                    continue
+                print(count)
+                count = count + 1
                 # Convert to Integer
                 location = int(words[0], base=16)
                 # Convert hexadecimal to a binary string
