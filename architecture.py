@@ -26,7 +26,7 @@ class Architecture:
     def getMemory(self):
         return self.__memory
 
-    def getMemory(self, EA):
+    def getMemoryforLOAD(self, EA):
         return self.__memory.getValue(EA)
 
     def setMemory(self, EA, value):

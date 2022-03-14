@@ -292,7 +292,7 @@ class App(Tk):
             self.architecture.setMAR(self.convert_decimal_to_binary(MAR_value + 1))
         elif number_LD == 13:
             MAR_value = self.architecture.getMAR()
-            self.MBR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMemory(MAR_value))
+            self.MBR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMemoryforLOAD(MAR_value))
         elif number_LD == 14:
             self.showMessage()
             self.load_file("IPL.txt")
