@@ -8,11 +8,11 @@ class Memory:
         self.__cache = Cache()
 
     def getValue(self, EA):
-        if self.__cache.getValue(EA) != -1:
-            return self.__cache.getValue(EA)
-        self.__cache.setValue(CacheLine(EA, self.__memory[EA]))
+        # if self.__cache.getValue(EA) != -1:
+        #     return self.__cache.getValue(EA)
+        # self.__cache.setValue(CacheLine(EA, self.__memory[EA]))
         return self.__memory[EA]
 
     def setValue(self, EA, value):
         self.__memory[EA] = value
-        self.__cache.updateValue(EA, value)
+        # self.__cache.updateValue(EA, value)

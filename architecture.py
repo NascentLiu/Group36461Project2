@@ -83,6 +83,16 @@ class Architecture:
     def getInput(self):
         return self.__input
 
+    def getInstruction(self, instr):
+        instruction = self.convert_decimal_to_binary(instr)
+        Opcode = self.convert_binary_to_decimal(instruction[:6])
+        R = instruction[6:8]
+        IX = instruction[8:10]
+        I = instruction[10]
+        Address = instruction[11:]
+        EA = self.getEA(IX, I, Address)
+        return oct(Opcode)[2:], R, IX, I, self.convert_binary_to_decimal(Address), EA
+
     def instruction_controller(self, instruction: str):
         Opcode = instruction[:6]
         R = instruction[6:8]
@@ -92,22 +102,34 @@ class Architecture:
         A_L = instruction[8]
         L_R = instruction[9]
         count = instruction[12:]
+        Trap = instruction[12:]
         EA = self.getEA(IX, I, Address)
+        EA_address = self.getEA_address(I, Address)
+        self.__IR.setValue(self.convert_binary_to_decimal(instruction))
+        self.__MAR.setValue(EA)
+        self.__MBR.setValue(self.__memory.getValue(EA))
         if Opcode == '000001':
+            self.__PC.pc_plus_one()
             self.execute_LDR(R, EA)
-            self.__PC.pc_plus_one()
+
         elif Opcode == '000010':
+            self.__PC.pc_plus_one()
             self.execute_STR(R, EA)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '000011':
+            self.__PC.pc_plus_one()
             self.execute_LDA(R, EA)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '100001':
-            self.execute_LDX(IX, Address)
             self.__PC.pc_plus_one()
+            self.execute_LDX(IX, EA_address)
+            # self.__PC.pc_plus_one()
         elif Opcode == '100010':
-            self.execute_STX(IX, EA)
             self.__PC.pc_plus_one()
+            self.execute_STX(IX, EA_address)
+            # self.__PC.pc_plus_one()
+        elif Opcode == '100011':
+            self.execute_JGT(R, IX, EA_address)
         #从这开始project2了！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         elif Opcode == '001000':#完成
             self.execute_JZ(R, EA)
@@ -126,65 +148,88 @@ class Architecture:
         elif Opcode == '001111':#完成
             self.execute_JGE(R, EA)
         elif Opcode == '000100':
+            self.__PC.pc_plus_one()
             self.execute_AMR(R, EA)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '000101':
+            self.__PC.pc_plus_one()
             self.execute_SMR(R, EA)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '000110':
-            self.execute_AIR(R, Address)
             self.__PC.pc_plus_one()
+            self.execute_AIR(R, EA)
+            # self.__PC.pc_plus_one()
         elif Opcode == '000111':
-            self.execute_SIR(R, Address)
             self.__PC.pc_plus_one()
+            self.execute_SIR(R, EA)
+            # self.__PC.pc_plus_one()
         elif Opcode == '010000':#完成
+            self.__PC.pc_plus_one()
             self.execute_MLT(R, IX)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '010001':#完成
+            self.__PC.pc_plus_one()
             self.execute_DVD(R, IX)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '010010':#完成
+            self.__PC.pc_plus_one()
             self.execute_TRR(R, IX)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '010011':#完成
+            self.__PC.pc_plus_one()
             self.execute_AND(R, IX)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '010100':#完成
+            self.__PC.pc_plus_one()
             self.execute_ORR(R, IX)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '010101':#完成
+            self.__PC.pc_plus_one()
             self.execute_NOT(R)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '011001':#完成
+            self.__PC.pc_plus_one()
             self.execute_SRC(R, A_L, L_R, count)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '011010':#完成
+            self.__PC.pc_plus_one()
             self.execute_RRC(R, A_L, L_R, count)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '110001':#完成
+            self.__PC.pc_plus_one()
             self.execute_IN(R, Address)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '110010':#完成
+            self.__PC.pc_plus_one()
             self.__output = self.execute_OUT(R, Address)
-            self.__PC.pc_plus_one()
+            # self.__PC.pc_plus_one()
         elif Opcode == '110011':#完成
-            self.execute_CHK(R, Address)
             self.__PC.pc_plus_one()
+            self.execute_CHK(R, Address)
+            # self.__PC.pc_plus_one()
+        elif Opcode == '011000':
+            self.__PC.pc_plus_one()
+            self.execute_TRAP(Trap)
         else:
             self.__PC.pc_plus_one()
-        # self.__MAR.setValue(EA)
-        # self.__MBR.setValue(self.__memory.getValue(self.__MAR.getValue()))
-        # self.__IR.setValue(self.convert_binary_to_decimal(instruction))
-
 
     def getEA(self, IX: str, I: str, Address: str) -> int:
         if IX == '00':
             EA = int(Address, 2)
         else:
-            EA = self.get_IXR_content(IX) + int(Address, 2)
+            if self.get_IXR_content(IX) + int(Address, 2) <= 2048:
+                EA = self.get_IXR_content(IX) + int(Address, 2)
+            else:
+                EA = int(Address, 2)
         if I == '1':
-            EA = (self.__memory.getValue(EA))
+            EA = self.__memory.getValue(EA)
         return EA
+
+    def getEA_address(self, I: str, Address: str) ->  int:
+        EA_addr = int(Address, 2)
+        if I == '1':
+            EA_addr = self.__memory.getValue(EA_addr)
+        return EA_addr
 
     def convert_binary_to_decimal(self, binary: str) -> int:
         return int(binary, 2)
@@ -243,11 +288,25 @@ class Architecture:
     def execute_LDA(self, R: str, EA: int):
         self.set_GPR_content(R, EA)
 
-    def execute_LDX(self, IX: str, Address: str):
-        self.set_IXR_content(IX, self.__memory.getValue(self.convert_binary_to_decimal(Address)))
+    def execute_LDX(self, IX: str, EA_address: int):
+        self.set_IXR_content(IX, self.__memory.getValue(EA_address))
 
-    def execute_STX(self, IX: str, EA: int):
-        self.__memory.setValue(EA, self.get_IXR_content(IX))
+    # def execute_LDX(self, IX: str, EA: int):
+    #     self.set_IXR_content(IX, self.__memory.getValue(EA))
+
+    # def execute_STX(self, IX: str, EA: int):
+    #     self.__memory.setValue(EA, self.get_IXR_content(IX))
+
+    def execute_STX(self, IX: str, EA_address: int):
+        self.__memory.setValue(EA_address, self.get_IXR_content(IX))
+
+    def execute_JGT(self, GPR: str, IX: str, EA_address: int):
+        difference = self.get_GPR_content(GPR) - self.get_GPR_content(IX)
+        print(difference)
+        if difference > 0:
+            self.__PC.setValue(EA_address)
+        else:
+            self.__PC.pc_plus_one()
 
     def execute_JZ(self, R: str, EA: int):
         GPR_value = self.get_GPR_content(R)
@@ -307,16 +366,14 @@ class Architecture:
             self.__conditioncode.setCCByIndex(1, '1')
         self.set_GPR_content(R, value)
 
-    def execute_AIR(self, R: str, Address: str):
-        immed = self.convert_binary_to_decimal(Address)
-        value = self.get_GPR_content(R) + immed
+    def execute_AIR(self, R: str, EA: int):
+        value = self.get_GPR_content(R) + EA
         if value > 65535:
             self.__conditioncode.setCCByIndex(0, '1')
         self.set_GPR_content(R, value)
 
-    def execute_SIR(self, R: str, Address: str):
-        immed = self.convert_binary_to_decimal(Address)
-        value = self.get_GPR_content(R) - immed
+    def execute_SIR(self, R: str, EA: int):
+        value = self.get_GPR_content(R) - EA
         if value < 0:
             self.__conditioncode.setCCByIndex(1, '1')
         self.set_GPR_content(R, value)
@@ -443,3 +500,8 @@ class Architecture:
                 self.set_GPR_content(R, 1)
             else:
                 self.set_GPR_content(R, 0)
+
+    def execute_TRAP(self, Trap: str):
+        print(Trap)
+        self.__memory.setValue(2, self.getProgramCounter() + 1)
+        self.__PC.setValue(self.__memory.getValue(0) + self.convert_binary_to_decimal(Trap))
