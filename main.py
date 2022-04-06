@@ -247,10 +247,112 @@ class App(Tk):
         self.L_short = 0
         self.PC_next = 0
         self.architecture = Architecture()
+
         self.isActivateInputDialog = True
         self.text_area = st.ScrolledText(self, width=50, height=10, font=("Times New Roman", 15))
         self.text_area.grid(row=7, column=20)
         self.text_area.place(x=200, y=350)
+        self.text_area_2 = st.ScrolledText(self, width=50, height=10, font=("Times New Roman", 15))
+        self.text_area_2.grid(row=19, column=20)
+        self.text_area_2.place(x=200, y=550)
+        self.memory_display = Label(self, text="Memory console:")
+        self.memory_display.grid(row=30, column=15)
+        self.memory_display.place(x=50, y=625)
+        #print
+        self.Opcode_d, self.GPR_d, self.IX_d, self.I_d, self.Address_r, self.EA_r = 0, 0, 0, 0, 0, 0
+        self.OOOPcode = Label(self, text="Opcode:")
+        self.OOOPcode.grid(row=7, column=20)
+        self.OOOPcode.place(x=650, y=360)
+        self.OOOPcode_d = Label(self, text= self.Opcode_d)
+        self.OOOPcode_d.grid(row=7, column=21)
+        self.OOOPcode_d.place(x=750, y=360)
+
+        self.GGGpr = Label(self, text="GPR:")
+        self.GGGpr.grid(row=8, column=20)
+        self.GGGpr.place(x=650, y=390)
+        self.GGGpr_d = Label(self, text= self.GPR_d)
+        self.GGGpr_d.grid(row=8, column=20)
+        self.GGGpr_d.place(x=750, y=390)
+
+        self.IIIr = Label(self, text="IX:")
+        self.IIIr.grid(row=9, column=20)
+        self.IIIr.place(x=650, y=420)
+        self.IIIr_d = Label(self, text=self.IX_d)
+        self.IIIr_d.grid(row=9, column=20)
+        self.IIIr_d.place(x=750, y=420)
+
+        self.III = Label(self, text="I:")
+        self.III.grid(row=10, column=20)
+        self.III.place(x=650, y=450)
+        self.III_d = Label(self, text=self.I_d)
+        self.III_d.grid(row=10, column=20)
+        self.III_d.place(x=750, y=450)
+
+        self.AAAdress = Label(self, text="Address:")
+        self.AAAdress.grid(row=10, column=20)
+        self.AAAdress.place(x=650, y=480)
+        self.AAAdress_d = Label(self, text=self.Address_r)
+        self.AAAdress_d.grid(row=10, column=20)
+        self.AAAdress_d.place(x=750, y=480)
+
+        self.EEEa = Label(self, text="EA:")
+        self.EEEa.grid(row=10, column=20)
+        self.EEEa.place(x=650, y=510)
+        self.EEEa_d = Label(self, text=self.EA_r)
+        self.EEEa_d.grid(row=10, column=20)
+        self.EEEa_d.place(x=750, y=510)
+
+        self.PPPc = Label(self, text="PC:")
+        self.PPPc.grid(row=10, column=20)
+        self.PPPc.place(x=650, y=540)
+        self.PPPc_d = Label(self, text=self.architecture.getProgramCounter().getValue())
+        self.PPPc_d.grid(row=10, column=20)
+        self.PPPc_d.place(x=750, y=540)
+
+        self.G0 = Label(self, text="G0:")
+        self.G0.grid(row=10, column=20)
+        self.G0.place(x=650, y=570)
+        self.G0_d = Label(self, text=self.architecture.getGPR0().getValue())
+        self.G0_d.grid(row=10, column=20)
+        self.G0_d.place(x=750, y=570)
+        self.G1 = Label(self, text="G1:")
+        self.G1.grid(row=10, column=20)
+        self.G1.place(x=650, y=600)
+        self.G1_d = Label(self, text=self.architecture.getGPR1().getValue())
+        self.G1_d.grid(row=10, column=20)
+        self.G1_d.place(x=750, y=600)
+        self.G2 = Label(self, text="G2:")
+        self.G2.grid(row=10, column=20)
+        self.G2.place(x=650, y=630)
+        self.G2_d = Label(self, text=self.architecture.getGPR2().getValue())
+        self.G2_d.grid(row=10, column=20)
+        self.G2_d.place(x=750, y=630)
+        self.G3 = Label(self, text="G3:")
+        self.G3.grid(row=10, column=20)
+        self.G3.place(x=650, y=660)
+        self.G3_d = Label(self, text=self.architecture.getGPR3().getValue())
+        self.G3_d.grid(row=10, column=20)
+        self.G3_d.place(x=750, y=660)
+
+        self.I1 = Label(self, text="I1:")
+        self.I1.grid(row=10, column=20)
+        self.I1.place(x=650, y=690)
+        self.I1_d = Label(self, text=self.architecture.getIXR1().getValue())
+        self.I1_d.grid(row=10, column=20)
+        self.I1_d.place(x=750, y=690)
+        self.I2 = Label(self, text="I2:")
+        self.I2.grid(row=10, column=20)
+        self.I2.place(x=650, y=720)
+        self.I2_d = Label(self, text=self.architecture.getIXR2().getValue())
+        self.I2_d.grid(row=10, column=20)
+        self.I2_d.place(x=750, y=720)
+        self.I3 = Label(self, text="I3:")
+        self.I3.grid(row=10, column=20)
+        self.I3.place(x=650, y=750)
+        self.I3_d = Label(self, text=self.architecture.getIXR3().getValue())
+        self.I3_d.grid(row=10, column=20)
+        self.I3_d.place(x=750, y=750)
+
 
 
 
@@ -298,8 +400,17 @@ class App(Tk):
             self.load_file("IPL.txt")
         elif number_LD == 15:
             instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
+            self.OOOPcode_d['text'], self.GGGpr_d['text'], self.IIIr_d['text'], self.III_d['text'], self.AAAdress_d['text'], self.EEEa_d['text'] = self.architecture.getInstruction(instruction)
+            self.PPPc_d['text'] = hex(self.architecture.getProgramCounter().getValue())[2:]
+            self.G0_d['text'] = self.architecture.getGPR0().getValue()
+            self.G1_d['text'] = self.architecture.getGPR1().getValue()
+            self.G2_d['text'] = self.architecture.getGPR2().getValue()
+            self.G3_d['text'] = self.architecture.getGPR3().getValue()
+            self.I1_d['text'] = self.architecture.getIXR1().getValue()
+            self.I2_d['text'] = self.architecture.getIXR2().getValue()
+            self.I3_d['text'] = self.architecture.getIXR3().getValue()
+            # print('PC: ', hex(self.architecture.getProgramCounter().getValue())[2:0])
             self.executeInstruction(instruction)
-            opcode = self.convert_decimal_to_binary(instruction)[0:6]
         elif number_LD == 16:
             while True:
                 instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
@@ -308,9 +419,14 @@ class App(Tk):
                 if opcode == '000000':
                     return
         elif number_LD == 17:
-            for abccc in range(2000):
+            self.text_area_2.delete(1.0, END)
+            for abccc in range(2048):
+                self.text_area_2.insert(tk.INSERT, abccc)
+                self.text_area_2.insert(tk.INSERT, ': ')
+                self.text_area_2.insert(tk.INSERT, self.architecture.getMemory().getValue(abccc))
+                self.text_area_2.insert(tk.INSERT, '\n')
                 # print("Address", abccc, ":", "value:", self.architecture.getMemory().getValue(abccc),"Address", abccc+1, ":", "value:", self.architecture.getMemory().getValue(abccc+1),"Address", abccc+2, ":", "value:", self.self.architecture.getMemory().getValue(abccc+3),"Address", abccc+3, ":", "value:", self.architecture.getMemory().getValue(abccc+3))
-                print(abccc, self.architecture.getMemory().getValue(abccc))
+                # print(abccc, self.architecture.getMemory().getValue(abccc))
     #get the value of 16 binary buttons
     def LD(self, number_LD):
         L1 = self.button_Operation1.cget("text")
@@ -436,6 +552,8 @@ class App(Tk):
         self.Halt_content['bg'] = "white"
         self.MFR_content['bg'] = "white"
         self.Privileged_content['bg'] = "white"
+        #print instructions
+
 
     def showMessageOfRegister(self, register: Register) -> str:
         if register.getValue() >= 65535:
