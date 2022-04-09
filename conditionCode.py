@@ -5,11 +5,12 @@ class ConditionCode:
     def getCode(self):
         return self.__code
 
-    def setCode(self, code):
-        self.__code = code
+    def setCode(self, bit, code):
+        self.__code[bit] = code
 
     def judgeCCBit(self, bit):
-        if self.__code[bit] == 1:
+        print('cc: ', self.__code)
+        if self.__code[bit] == '1':
             return True
         return False
 

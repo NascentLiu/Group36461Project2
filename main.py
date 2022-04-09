@@ -396,8 +396,20 @@ class App(Tk):
             MAR_value = self.architecture.getMAR()
             self.MBR_content['text'] = self.convert_decimal_to_binary(self.architecture.getMemoryforLOAD(MAR_value))
         elif number_LD == 14:
+            # self.architecture = Architecture()
+            # self.showMessage()
+            self.button_SS.config(state=tkinter.NORMAL)
+            self.button_Run.config(state=tkinter.NORMAL)
+            self.Halt_content['bg'] = 'white'
+            # self.architecture = Architecture(512)
+            self.architecture.flush()
+            fileName = self.load_file("IPL.txt")
+            print(fileName)
+            if (fileName == '/Users/liubo/Documents/program1.txt'):
+                self.architecture.getPC().setValue(256)
+            else:
+                self.architecture.getPC().setValue(512)
             self.showMessage()
-            self.load_file("IPL.txt")
         elif number_LD == 15:
             instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
             self.OOOPcode_d['text'], self.GGGpr_d['text'], self.IIIr_d['text'], self.III_d['text'], self.AAAdress_d['text'], self.EEEa_d['text'] = self.architecture.getInstruction(instruction)
@@ -508,6 +520,7 @@ class App(Tk):
                 # Convert hexadecimal to a binary string
                 instruction = int(words[1], base=16)
                 self.architecture.getMemory().setValue(location, instruction)
+        return file_name
 
     def executeInstruction(self, instruction: int):
         instruction = self.convert_decimal_to_binary(instruction)

@@ -13,7 +13,7 @@ class Architecture:
         self.__IXR1 = Register()
         self.__IXR2 = Register()
         self.__IXR3 = Register()
-        self.__PC = ProgramCounter(256)
+        self.__PC = ProgramCounter(0)
         self.__MAR = Register()
         self.__MBR = Register()
         self.__IR = Register()
@@ -22,6 +22,9 @@ class Architecture:
         self.__conditioncode = ConditionCode()
         self.__input = ''
         self.__output = 0
+
+    def getPC(self):
+        return self.__PC
 
     def getMemory(self):
         return self.__memory
@@ -302,7 +305,6 @@ class Architecture:
 
     def execute_JGT(self, GPR: str, IX: str, EA_address: int):
         difference = self.get_GPR_content(GPR) - self.get_GPR_content(IX)
-        print(difference)
         if difference > 0:
             self.__PC.setValue(EA_address)
         else:
@@ -323,10 +325,13 @@ class Architecture:
             self.__PC.pc_plus_one()
 
     def execute_JCC(self, cc: str, EA: int):
+        print('jcc')
         bit = int(cc, 2)
         if self.__conditioncode.judgeCCBit(bit):
+            print('进1')
             self.__PC.setValue(EA)
         else:
+            print('进2')
             self.__PC.pc_plus_one()
 
     def execute_JMA(self, EA: int):
@@ -481,10 +486,17 @@ class Architecture:
 
     def execute_IN(self, R: str, address: str):
         if address == '00000':
-            char = self.__input[0:1]
-            if char == '':
+            if len(self.__input) == 0:
                 self.set_GPR_content(R, 0)
             else:
+                char = self.__input[0:1]
+                self.set_GPR_content(R, ord(char))
+                self.__input = self.__input[1:]
+        elif address == '00010':
+            if len(self.__input) == 0:
+                self.set_GPR_content(R, 0)
+            else:
+                char = self.__input[0:1]
                 self.set_GPR_content(R, ord(char))
                 self.__input = self.__input[1:]
 
@@ -505,3 +517,21 @@ class Architecture:
         print(Trap)
         self.__memory.setValue(2, self.getProgramCounter() + 1)
         self.__PC.setValue(self.__memory.getValue(0) + self.convert_binary_to_decimal(Trap))
+
+    def flush(self):
+        self.__GPR0 = Register()
+        self.__GPR1 = Register()
+        self.__GPR2 = Register()
+        self.__GPR3 = Register()
+        self.__IXR1 = Register()
+        self.__IXR2 = Register()
+        self.__IXR3 = Register()
+        self.__PC = ProgramCounter(0)
+        self.__MAR = Register()
+        self.__MBR = Register()
+        self.__IR = Register()
+        self.__MFR = Register()
+        self.__memory = Memory()
+        self.__conditioncode = ConditionCode()
+        self.__input = ''
+        self.__output = 0
