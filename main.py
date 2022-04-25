@@ -100,15 +100,15 @@ class App(Tk):
 
         self.FP0 = Label(self, text="FP0")
         self.FP0.grid(row=12, column=0)
-        self.FP0_content = Label(self, width=25, bg="white", text="0000000000000000")
-        self.FP0_content.grid(row=12, column=1)
+        self.FPR0_content = Label(self, width=25, bg="white", text="0000000000000000")
+        self.FPR0_content.grid(row=12, column=1)
         self.button_FP0 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(18))
         self.button_FP0.grid(row=12, column=2)
 
         self.FP1 = Label(self, text="FP1")
         self.FP1.grid(row=13, column=0)
-        self.FP1_content = Label(self, width=25, bg="white", text="0000000000000000")
-        self.FP1_content.grid(row=13, column=1)
+        self.FPR1_content = Label(self, width=25, bg="white", text="0000000000000000")
+        self.FPR1_content.grid(row=13, column=1)
         self.button_FP1 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(19))
         self.button_FP1.grid(row=13, column=2)
 
@@ -440,7 +440,7 @@ class App(Tk):
         elif number_LD == 16:
             while True:
                 instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
-                self.executeInstruction(instruction)
+                self.pipelineExecuteInstruction(instruction)
                 opcode = self.convert_decimal_to_binary(instruction)[0:6]
                 if opcode == '000000':
                     return
@@ -540,7 +540,7 @@ class App(Tk):
                 self.architecture.getMemory().setValue(location, instruction)
         return file_name
 
-    def executeInstruction(self, instruction: int):
+    def pipelineExecuteInstruction(self, instruction: int):
         instruction = self.convert_decimal_to_binary(instruction)
         opcode = instruction[0:6]
         if opcode == "000000":
@@ -574,8 +574,8 @@ class App(Tk):
         self.IXR1_content['text'] = self.showMessageOfRegister(self.architecture.getIXR1())
         self.IXR2_content['text'] = self.showMessageOfRegister(self.architecture.getIXR2())
         self.IXR3_content['text'] = self.showMessageOfRegister(self.architecture.getIXR3())
-        self.FP0_content['text'] = self.showMessageOfRegister(self.architecture.getFP0())
-        self.FP1_content['text'] = self.showMessageOfRegister(self.architecture.getFP1())
+        self.FPR0_content['text'] = self.showMessageOfRegister(self.architecture.getFPR0())
+        self.FPR1_content['text'] = self.showMessageOfRegister(self.architecture.getFPR1())
         self.PC_content['text'] = bin(self.architecture.getProgramCounter().getValue())[2:].zfill(12)
         self.MAR_content['text'] = self.showMessageOfRegister(self.architecture.getMAR())
         self.MBR_content['text'] = self.showMessageOfRegister(self.architecture.getMBR())

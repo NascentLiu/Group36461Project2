@@ -13,8 +13,8 @@ class Architecture:
         self.__IXR1 = Register()
         self.__IXR2 = Register()
         self.__IXR3 = Register()
-        self.__FP0 = Register()
-        self.__FP1 = Register()
+        self.__FPR0 = Register()
+        self.__FPR1 = Register()
         self.__PC = ProgramCounter(512)
         self.__MAR = Register()
         self.__MBR = Register()
@@ -64,11 +64,11 @@ class Architecture:
     def getIXR3(self):
         return self.__IXR3
 
-    def getFP0(self):
-        return self.__FP0
+    def getFPR0(self):
+        return self.__FPR0
 
-    def getFP1(self):
-        return self.__FP1
+    def getFPR1(self):
+        return self.__FPR1
 
     def getMAR(self):
         return self.__MAR
@@ -104,6 +104,12 @@ class Architecture:
         EA = self.getEA(IX, I, Address)
         return oct(Opcode)[2:], R, IX, I, self.convert_binary_to_decimal(Address), EA
 
+    def fetch_instruction(self, EA: int):
+        self.__MAR.setValue(EA)
+        self.__MBR.setValue(self.__memory.getValue(EA))
+        self.__IR.setValue(self.__memory.getValue(self.__PC.getValue()))
+
+
     def instruction_controller(self, instruction: str):
         Opcode = instruction[:6]
         R = instruction[6:8]
@@ -116,9 +122,10 @@ class Architecture:
         Trap = instruction[12:]
         EA = self.getEA(IX, I, Address)
         EA_address = self.getEA_address(I, Address)
-        self.__IR.setValue(self.convert_binary_to_decimal(instruction))
-        self.__MAR.setValue(EA)
-        self.__MBR.setValue(self.__memory.getValue(EA))
+        self.fetch_instruction(EA)
+        # self.__IR.setValue(self.convert_binary_to_decimal(instruction))
+        # self.__MAR.setValue(EA)
+        # self.__MBR.setValue(self.__memory.getValue(EA))
         if Opcode == '000001':
             self.__PC.pc_plus_one()
             self.execute_LDR(R, EA)
@@ -221,6 +228,27 @@ class Architecture:
         elif Opcode == '011000':
             self.__PC.pc_plus_one()
             self.execute_TRAP(Trap)
+        elif Opcode == '011011':
+            self.__PC.pc_plus_one()
+            self.execute_FADD(R, EA)
+        elif Opcode == '011100':
+            self.__PC.pc_plus_one()
+            self.execute_FSUB(R, EA)
+        elif Opcode == '011101':
+            self.__PC.pc_plus_one()
+            self.execute_VADD(R, EA)
+        elif Opcode == '011110':
+            self.__PC.pc_plus_one()
+            self.execute_VSUB(R, EA)
+        elif Opcode == '011111':
+            self.__PC.pc_plus_one()
+            self.execute_CNVRT(R, EA)
+        elif Opcode == '101000':
+            self.__PC.pc_plus_one()
+            self.execute_LDFR(R, EA)
+        elif Opcode == '101001':
+            self.__PC.pc_plus_one()
+            self.execute_STFR(R, EA)
         else:
             self.__PC.pc_plus_one()
 
@@ -286,6 +314,19 @@ class Architecture:
             self.__IXR2.setValue(IXR_value)
         elif IX == '11':
             self.__IXR3.setValue(IXR_value)
+
+    def get_FPR_content(self, R: str) -> int:
+        if R == '00':
+            FPR_value = self.__FPR0.getValue()
+        else:
+            FPR_value = self.__FPR1.getValue()
+        return FPR_value
+
+    def set_FPR_content(self, R: str, FPR_value: int):
+        if R == '00':
+            self.__FPR0.setValue(FPR_value)
+        else:
+            self.__FPR1.setValue(FPR_value)
 
     def setInput(self, input: int):
         self.__input = input
@@ -525,6 +566,180 @@ class Architecture:
         print(Trap)
         self.__memory.setValue(2, self.getProgramCounter() + 1)
         self.__PC.setValue(self.__memory.getValue(0) + self.convert_binary_to_decimal(Trap))
+
+    def execute_FADD(self, R: str, EA: int):
+        FP_A = self.convert_decimal_to_binary(self.get_FPR_content(R))
+        FP_A_S = int(FP_A[0])
+        FP_A_Ex_S = FP_A[1]
+        if FP_A_Ex_S == '0':
+            FP_A_Ex = int(FP_A[2:8])
+        else:
+            FP_A_Ex = -int(FP_A[2:8])
+        FP_A_Ma = int(FP_A[8:])
+
+        FP_B = self.convert_decimal_to_binary(self.__memory.getValue(EA))
+        FP_B_S = int(FP_B[0])
+        FP_B_Ex_S = FP_B[1]
+        if FP_B_Ex_S == '0':
+            FP_B_Ex = int(FP_B[2:8])
+        else:
+            FP_B_Ex = -int(FP_B[2:8])
+        FP_B_Ma = int(FP_B[8:])
+
+        while FP_A_Ex != FP_B_Ex:
+            if FP_A_Ex > FP_B_Ex:
+                if FP_A_Ma > 127:
+                    FP_B_Ex = FP_A_Ex
+                    FP_B_Ma = 0
+                    break
+                FP_A_Ex -= 1
+                FP_A_Ma *= 2
+            else:
+                if FP_B_Ma > 127:
+                    FP_A_Ex = FP_B_Ex
+                    FP_A_Ma = 0
+                    break
+                FP_B_Ex -= 1
+                FP_B_Ma *= 2
+
+        res_S = '0'
+        res_Ma = FP_A_Ma + FP_B_Ma
+        if res_Ma < 0:
+            res_S = '1'
+            res_Ma = -res_Ma
+        if res_Ma > 255:
+            res_Ma = res_Ma / 2
+            FP_A_Ex += 1
+        res_Ma = bin(res_Ma)[2:].zfill(8)
+
+        res_Ex = '0'
+        if FP_A_Ex < 0:
+            res_Ex = '1'
+            FP_A_Ex = -FP_A_Ex
+        FP_A_Ex = bin(res_Ma)[2:].zfill(6)
+        res_Ex += FP_A_Ex
+
+        res = int(res_S + res_Ex + res_Ma, 2)
+        self.set_FPR_content(R, res)
+
+    def execute_FSUB(self, R: str, EA: int):
+        FP_A = self.convert_decimal_to_binary(self.get_FPR_content(R))
+        FP_A_S = int(FP_A[0])
+        FP_A_Ex_S = FP_A[1]
+        if FP_A_Ex_S == '0':
+            FP_A_Ex = int(FP_A[2:8])
+        else:
+            FP_A_Ex = -int(FP_A[2:8])
+        FP_A_Ma = int(FP_A[8:])
+
+        FP_B = self.convert_decimal_to_binary(self.__memory.getValue(EA))
+        FP_B_S = int(FP_B[0])
+        FP_B_Ex_S = FP_B[1]
+        if FP_B_Ex_S == '0':
+            FP_B_Ex = int(FP_B[2:8])
+        else:
+            FP_B_Ex = -int(FP_B[2:8])
+        FP_B_Ma = int(FP_B[8:])
+
+        while FP_A_Ex != FP_B_Ex:
+            if FP_A_Ex > FP_B_Ex:
+                if FP_A_Ma > 127:
+                    FP_B_Ex = FP_A_Ex
+                    FP_B_Ma = 0
+                    break
+                FP_A_Ex -= 1
+                FP_A_Ma *= 2
+            else:
+                if FP_B_Ma > 127:
+                    FP_A_Ex = FP_B_Ex
+                    FP_A_Ma = 0
+                    break
+                FP_B_Ex -= 1
+                FP_B_Ma *= 2
+
+        res_S = '0'
+        res_Ma = FP_A_Ma - FP_B_Ma
+        if res_Ma < 0:
+            res_S = '1'
+            res_Ma = -res_Ma
+        if res_Ma > 255:
+            res_Ma = res_Ma / 2
+            FP_A_Ex += 1
+        res_Ma = bin(res_Ma)[2:].zfill(8)
+
+        res_Ex = '0'
+        if FP_A_Ex < 0:
+            res_Ex = '1'
+            FP_A_Ex = -FP_A_Ex
+        FP_A_Ex = bin(res_Ma)[2:].zfill(6)
+        res_Ex += FP_A_Ex
+
+        res = int(res_S + res_Ex + res_Ma, 2)
+        self.set_FPR_content(R, res)
+
+    def execute_VADD(self, R: str, EA: int):
+        content = self.convert_decimal_to_binary(self.get_FPR_content(R))
+        S = content[1]
+        Ex = int(content[2:8])
+        Ma = int(content[8:])
+        if S == '0':
+            length = Ma
+            while Ex != 0:
+                length *= 2
+                Ex -= 1
+        else:
+            length = Ma
+            while Ex != 0:
+                length /= 2
+                Ex -= 1
+
+        vec1 = self.__memory.getValue(EA)
+        vec2 = self.__memory.getValue(EA + 1)
+        for i in range(length):
+            self.__memory.setValue(vec1 + i, self.__memory.getValue(vec1 + i) + self.__memory.getValue(vec2 + i))
+
+    def execute_VSUB(self, R: str, EA: int):
+        content = self.convert_decimal_to_binary(self.get_FPR_content(R))
+        S = content[1]
+        Ex = int(content[2:8])
+        Ma = int(content[8:])
+        if S == '0':
+            length = Ma
+            while Ex != 0:
+                length *= 2
+                Ex -= 1
+        else:
+            length = Ma
+            while Ex != 0:
+                length /= 2
+                Ex -= 1
+
+        vec1 = self.__memory.getValue(EA)
+        vec2 = self.__memory.getValue(EA + 1)
+        for i in range(length):
+            self.__memory.setValue(vec1 + i, self.__memory.getValue(vec1 + i) - self.__memory.getValue(vec2 + i))
+
+    def execute_CNVRT(self, R: str, EA: int):
+        F = self.get_GPR_content(R)
+        content = self.__memory.getValue(EA)
+        if F == 0:
+            self.set_GPR_content(R, content)
+        else:
+            Ex = 0
+            while content > 255:
+                content /= 2
+                Ex += 1
+            S = '0'
+            Ex = bin(EX)[2:].zfill(7)
+            Ma = bin(Ma)[2:].zfill(8)
+            res = int(res_S + res_Ex + res_Ma, 2)
+            self.set_FPR_content('00', res)
+
+    def execute_LDFR(self, R: str, EA: int):
+        self.set_FPR_content(R, self.__memory.getValue(EA))
+
+    def execute_STFR(self, R: str, EA: int):
+        self.__memory.setValue(EA, self.get_FPR_content(R))
 
     def flush(self):
         self.__GPR0 = Register()
