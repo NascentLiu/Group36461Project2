@@ -13,6 +13,8 @@ class Architecture:
         self.__IXR1 = Register()
         self.__IXR2 = Register()
         self.__IXR3 = Register()
+        self.__FP0 = Register()
+        self.__FP1 = Register()
         self.__PC = ProgramCounter(512)
         self.__MAR = Register()
         self.__MBR = Register()
@@ -61,6 +63,12 @@ class Architecture:
 
     def getIXR3(self):
         return self.__IXR3
+
+    def getFP0(self):
+        return self.__FP0
+
+    def getFP1(self):
+        return self.__FP1
 
     def getMAR(self):
         return self.__MAR

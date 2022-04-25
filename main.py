@@ -78,25 +78,39 @@ class App(Tk):
         self.button_GPR3.grid(row=8, column=2)
 
         self.IXR1 = Label(self, text="IXR1")
-        self.IXR1.grid(row=10, column=0)
+        self.IXR1.grid(row=9, column=0)
         self.IXR1_content = Label(self, width=25, bg="white", text="0000000000000000")
-        self.IXR1_content.grid(row=10, column=1)
+        self.IXR1_content.grid(row=9, column=1)
         self.button_IXR1 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(5))
-        self.button_IXR1.grid(row=10, column=2)
+        self.button_IXR1.grid(row=9, column=2)
 
         self.IXR2 = Label(self, text="IXR2")
-        self.IXR2.grid(row=11, column=0)
+        self.IXR2.grid(row=10, column=0)
         self.IXR2_content = Label(self, width=25, bg="white", text="0000000000000000")
-        self.IXR2_content.grid(row=11, column=1)
+        self.IXR2_content.grid(row=10, column=1)
         self.button_IXR2 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(6))
-        self.button_IXR2.grid(row=11, column=2)
+        self.button_IXR2.grid(row=10, column=2)
 
         self.IXR3 = Label(self, text="IXR3")
-        self.IXR3.grid(row=12, column=0)
+        self.IXR3.grid(row=11, column=0)
         self.IXR3_content = Label(self, width=25, bg="white", text="0000000000000000")
-        self.IXR3_content.grid(row=12, column=1)
+        self.IXR3_content.grid(row=11, column=1)
         self.button_IXR3 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(7))
-        self.button_IXR3.grid(row=12, column=2)
+        self.button_IXR3.grid(row=11, column=2)
+
+        self.FP0 = Label(self, text="FP0")
+        self.FP0.grid(row=12, column=0)
+        self.FP0_content = Label(self, width=25, bg="white", text="0000000000000000")
+        self.FP0_content.grid(row=12, column=1)
+        self.button_FP0 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(18))
+        self.button_FP0.grid(row=12, column=2)
+
+        self.FP1 = Label(self, text="FP1")
+        self.FP1.grid(row=13, column=0)
+        self.FP1_content = Label(self, width=25, bg="white", text="0000000000000000")
+        self.FP1_content.grid(row=13, column=1)
+        self.button_FP1 = Button(self, text="LD", padx=2, pady=2, command=lambda: self.LD(19))
+        self.button_FP1.grid(row=13, column=2)
 
         self.button_Operation1 = Button(self, text="0", command=lambda: self.Switch(1))
         self.button_Operation1.grid(row=14, column=1)
@@ -439,6 +453,10 @@ class App(Tk):
                 self.text_area_2.insert(tk.INSERT, '\n')
                 # print("Address", abccc, ":", "value:", self.architecture.getMemory().getValue(abccc),"Address", abccc+1, ":", "value:", self.architecture.getMemory().getValue(abccc+1),"Address", abccc+2, ":", "value:", self.self.architecture.getMemory().getValue(abccc+3),"Address", abccc+3, ":", "value:", self.architecture.getMemory().getValue(abccc+3))
                 # print(abccc, self.architecture.getMemory().getValue(abccc))
+        elif number_LD == 18:
+            self.FP0_content['text'] = self.L_long
+        elif number_LD == 19:
+            self.FP1_content['text'] = self.L_long
     #get the value of 16 binary buttons
     def LD(self, number_LD):
         L1 = self.button_Operation1.cget("text")
@@ -556,6 +574,8 @@ class App(Tk):
         self.IXR1_content['text'] = self.showMessageOfRegister(self.architecture.getIXR1())
         self.IXR2_content['text'] = self.showMessageOfRegister(self.architecture.getIXR2())
         self.IXR3_content['text'] = self.showMessageOfRegister(self.architecture.getIXR3())
+        self.FP0_content['text'] = self.showMessageOfRegister(self.architecture.getFP0())
+        self.FP1_content['text'] = self.showMessageOfRegister(self.architecture.getFP1())
         self.PC_content['text'] = bin(self.architecture.getProgramCounter().getValue())[2:].zfill(12)
         self.MAR_content['text'] = self.showMessageOfRegister(self.architecture.getMAR())
         self.MBR_content['text'] = self.showMessageOfRegister(self.architecture.getMBR())
