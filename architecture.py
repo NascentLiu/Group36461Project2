@@ -15,7 +15,7 @@ class Architecture:
         self.__IXR3 = Register()
         self.__FPR0 = Register()
         self.__FPR1 = Register()
-        self.__PC = ProgramCounter(20)
+        self.__PC = ProgramCounter(0)
         self.__MAR = Register()
         self.__MBR = Register()
         self.__IR = Register()
@@ -616,7 +616,7 @@ class Architecture:
         if FP_A_Ex < 0:
             res_Ex = '1'
             FP_A_Ex = -FP_A_Ex
-        FP_A_Ex = bin(res_Ma)[2:].zfill(6)
+        FP_A_Ex = bin(FP_A_Ex)[2:].zfill(6)
         res_Ex += FP_A_Ex
 
         res = int(res_S + res_Ex + res_Ma, 2)
@@ -671,7 +671,7 @@ class Architecture:
         if FP_A_Ex < 0:
             res_Ex = '1'
             FP_A_Ex = -FP_A_Ex
-        FP_A_Ex = bin(res_Ma)[2:].zfill(6)
+        FP_A_Ex = bin(FP_A_Ex)[2:].zfill(6)
         res_Ex += FP_A_Ex
 
         res = int(res_S + res_Ex + res_Ma, 2)
@@ -695,6 +695,7 @@ class Architecture:
 
         vec1 = self.__memory.getValue(EA)
         vec2 = self.__memory.getValue(EA + 1)
+        length = 5
         for i in range(length):
             self.__memory.setValue(vec1 + i, self.__memory.getValue(vec1 + i) + self.__memory.getValue(vec2 + i))
 
@@ -723,7 +724,7 @@ class Architecture:
         F = self.get_GPR_content(R)
         content = self.__memory.getValue(EA)
         if F == 0:
-            self.set_GPR_content(R, content)
+            self.__memory.setValue(EA, 5)
         else:
             Ex = 0
             while content > 255:
@@ -731,7 +732,7 @@ class Architecture:
                 Ex += 1
             S = '0'
             Ex = bin(Ex)[2:].zfill(7)
-            Ma = bin(content)[2:].zfill(8)
+            Ma = bin(int(content))[2:].zfill(8)
             res = int(S + Ex + Ma, 2)
             self.set_FPR_content('00', res)
 
@@ -746,10 +747,12 @@ class Architecture:
         self.__GPR1 = Register()
         self.__GPR2 = Register()
         self.__GPR3 = Register()
+        self.__FPR0 = Register()
+        self.__FPR1 = Register()
         self.__IXR1 = Register()
         self.__IXR2 = Register()
         self.__IXR3 = Register()
-        self.__PC = ProgramCounter(512)
+        self.__PC = ProgramCounter(0)
         self.__MAR = Register()
         self.__MBR = Register()
         self.__IR = Register()

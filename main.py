@@ -367,6 +367,9 @@ class App(Tk):
         # self.I3_d.grid(row=10, column=20)
         # self.I3_d.place(x=750, y=750)
 
+        self.fileName = ''
+        self.counter = 0
+
 
 
 
@@ -392,7 +395,7 @@ class App(Tk):
         elif number_LD == 9:
             self.MAR_content['text'] = self.L_short
             self.architecture.setMAR(self.L_short)
-            print(self.architecture.getMAR())
+            # print(self.architecture.getMAR())
         elif number_LD == 10:
             self.MBR_content['text'] = self.L_long
             self.architecture.setMBR(self.L_long)
@@ -415,41 +418,59 @@ class App(Tk):
             self.button_SS.config(state=tkinter.NORMAL)
             self.button_Run.config(state=tkinter.NORMAL)
             self.Halt_content['bg'] = 'white'
+            self.Run_content['bg'] = 'white'
             # self.architecture = Architecture(512)
             self.architecture.flush()
-            self.load_file("IPL.txt")
+            self.fileName = self.load_file("IPL.txt")
+            self.text_area.delete('1.0', tk.END)
+            self.text_area_2.delete('1.0', END)
             # print(fileName)
-            # if (fileName == '/Users/liubo/Documents/program1.txt'):
-            #     self.architecture.getPC().setValue(256)
-            # else:
-            #     self.architecture.getPC().setValue(512)
+            if self.fileName[-5] == '1':
+                self.architecture.getPC().setValue(256)
+            elif self.fileName[-5] == '2':
+                self.architecture.getPC().setValue(512)
+            else:
+                self.architecture.getPC().setValue(6)
+            self.text_area.insert(tk.INSERT, "File loaded, please click SS or Run button to run the program.")
+            self.text_area.insert(tk.INSERT, "\n")
             self.showMessage()
         elif number_LD == 15:
             instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
-            self.OOOPcode_d['text'], self.GGGpr_d['text'], self.IIIr_d['text'], self.III_d['text'], self.AAAdress_d['text'], self.EEEa_d['text'] = self.architecture.getInstruction(instruction)
-            self.PPPc_d['text'] = hex(self.architecture.getProgramCounter().getValue())[2:]
-            self.G0_d['text'] = self.architecture.getGPR0().getValue()
-            self.G1_d['text'] = self.architecture.getGPR1().getValue()
-            self.G2_d['text'] = self.architecture.getGPR2().getValue()
-            self.G3_d['text'] = self.architecture.getGPR3().getValue()
-            self.I1_d['text'] = self.architecture.getIXR1().getValue()
-            self.I2_d['text'] = self.architecture.getIXR2().getValue()
-            self.I3_d['text'] = self.architecture.getIXR3().getValue()
+            # self.OOOPcode_d['text'], self.GGGpr_d['text'], self.IIIr_d['text'], self.III_d['text'], self.AAAdress_d['text'], self.EEEa_d['text'] = self.architecture.getInstruction(instruction)
+            # self.PPPc_d['text'] = hex(self.architecture.getProgramCounter().getValue())[2:]
+            # self.G0_d['text'] = self.architecture.getGPR0().getValue()
+            # self.G1_d['text'] = self.architecture.getGPR1().getValue()
+            # self.G2_d['text'] = self.architecture.getGPR2().getValue()
+            # self.G3_d['text'] = self.architecture.getGPR3().getValue()
+            # self.I1_d['text'] = self.architecture.getIXR1().getValue()
+            # self.I2_d['text'] = self.architecture.getIXR2().getValue()
+            # self.I3_d['text'] = self.architecture.getIXR3().getValue()
             # print('PC: ', hex(self.architecture.getProgramCounter().getValue())[2:0])
-            self.executeInstruction(instruction)
+            self.pipelineExecuteInstruction(instruction)
         elif number_LD == 16:
             while True:
+                self.counter += 1
                 instruction = self.architecture.getMemory().getValue(self.architecture.getProgramCounter().getValue())
                 self.pipelineExecuteInstruction(instruction)
                 opcode = self.convert_decimal_to_binary(instruction)[0:6]
+                self.Run_content['bg'] = "red"
+                self.Halt_content['bg'] = "white"
                 if opcode == '000000':
+                    self.text_area.insert(tk.INSERT, "The program is finished!")
+                    self.Run_content['bg'] = "white"
+                    self.Halt_content['bg'] = "red"
+                    return
+                if self.counter >= 5000 and self.fileName[-5] == '2':
+                    self.text_area.insert(tk.INSERT, "There is no matched word!")
+                    self.Run_content['bg'] = "white"
+                    self.Halt_content['bg'] = "red"
                     return
         elif number_LD == 17:
             self.text_area_2.delete(1.0, END)
             for abccc in range(2048):
                 self.text_area_2.insert(tk.INSERT, abccc)
                 self.text_area_2.insert(tk.INSERT, ': ')
-                self.text_area_2.insert(tk.INSERT, self.architecture.getMemory().getValue(abccc))
+                self.text_area_2.insert(tk.INSERT, bin(self.architecture.getMemory().getValue(abccc))[2:])
                 self.text_area_2.insert(tk.INSERT, '\n')
                 # print("Address", abccc, ":", "value:", self.architecture.getMemory().getValue(abccc),"Address", abccc+1, ":", "value:", self.architecture.getMemory().getValue(abccc+1),"Address", abccc+2, ":", "value:", self.self.architecture.getMemory().getValue(abccc+3),"Address", abccc+3, ":", "value:", self.architecture.getMemory().getValue(abccc+3))
                 # print(abccc, self.architecture.getMemory().getValue(abccc))
@@ -547,7 +568,10 @@ class App(Tk):
             self.execute_HLT()
         elif opcode == "110001":
             if self.isActivateInputDialog == True:
-                answer = simpledialog.askstring("Input", "please enter an integer")
+                if self.fileName[-5] == '1':
+                    answer = simpledialog.askstring("Input", "please enter an integer.")
+                else:
+                    answer = simpledialog.askstring("Input", "please enter some sentences.")
                 self.architecture.setInput(answer)
                 self.isActivateInputDialog = False
             self.architecture.instruction_controller(instruction)
