@@ -731,8 +731,8 @@ class Architecture:
                 Ex += 1
             S = '0'
             Ex = bin(Ex)[2:].zfill(7)
-            Ma = bin(Ma)[2:].zfill(8)
-            res = int(res_S + res_Ex + res_Ma, 2)
+            Ma = bin(content)[2:].zfill(8)
+            res = int(S + Ex + Ma, 2)
             self.set_FPR_content('00', res)
 
     def execute_LDFR(self, R: str, EA: int):
