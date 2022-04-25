@@ -15,7 +15,7 @@ class Architecture:
         self.__IXR3 = Register()
         self.__FPR0 = Register()
         self.__FPR1 = Register()
-        self.__PC = ProgramCounter(512)
+        self.__PC = ProgramCounter(20)
         self.__MAR = Register()
         self.__MBR = Register()
         self.__IR = Register()
@@ -730,7 +730,7 @@ class Architecture:
                 content /= 2
                 Ex += 1
             S = '0'
-            Ex = bin(EX)[2:].zfill(7)
+            Ex = bin(Ex)[2:].zfill(7)
             Ma = bin(Ma)[2:].zfill(8)
             res = int(res_S + res_Ex + res_Ma, 2)
             self.set_FPR_content('00', res)
